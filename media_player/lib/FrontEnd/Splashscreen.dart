@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import '../BackEnd/App.dart';
 import 'Home.dart';
 
 class Splashscreen extends StatefulWidget{
@@ -11,13 +12,21 @@ class Splashscreen extends StatefulWidget{
 }
 
 class _SplashscreenState extends State<Splashscreen>{
-  late Timer timer;
+  // late Timer timer;
 
   @override
-  void initState() {
+  void initState(){
     // TODO: implement initState
     super.initState();
-    timer = Timer(const Duration(seconds: 2), (){
+
+    initialize();
+    // timer = Timer(const Duration(seconds: 2), (){
+    //
+    // });
+  }
+
+  void initialize()async{
+    await App.initialize().then((val){
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Home()));
     });
   }
@@ -26,7 +35,7 @@ class _SplashscreenState extends State<Splashscreen>{
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    timer.cancel();
+    // timer.cancel();
   }
 
   @override

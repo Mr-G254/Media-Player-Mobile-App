@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:media_player/FrontEnd/Components.dart';
 
+import '../BackEnd/App.dart';
+
 class Music extends StatefulWidget{
   const Music({super.key});
 
@@ -64,22 +66,7 @@ class _MusicState extends State<Music>{
           child: ListView(
             padding: EdgeInsets.zero,
             shrinkWrap: true,
-            children: [
-              SongTile(),
-              SongTile(),
-              SongTile(),
-              SongTile(),
-              SongTile(),
-              SongTile(),
-              SongTile(),
-              SongTile(),
-              SongTile(),
-              SongTile(),
-              SongTile(),
-              SongTile(),
-              SongTile(),
-              SongTile(),
-            ],
+            children: App.songDisplay
           ),
         ),
       ],
