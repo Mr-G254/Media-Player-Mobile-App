@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+
+import '../BackEnd/App.dart';
 
 class NowPlaying extends StatefulWidget{
   final SongModel song;
@@ -11,6 +15,35 @@ class NowPlaying extends StatefulWidget{
 }
 
 class _NowPlayingState extends State<NowPlaying>{
+  Duration currentPosition = Duration(seconds: 0);
+  late StreamSubscription<Duration> progressEvent;
+  late StreamSubscription<void> onEndEvent;
+  late SongModel current = widget.song;
+  
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    progressEvent = App.player.onPositionChanged.listen((dur){
+      setState(() {
+        currentPosition = dur;
+      });
+    });
+
+    onEndEvent = App.player.onPlayerComplete.listen((dur){
+      setState(() {
+        current = App.nextSong();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    progressEvent.cancel();
+    // onEndEvent.cancel();
+  }
 
   @override
   Widget build(BuildContext context){
@@ -42,7 +75,7 @@ class _NowPlayingState extends State<NowPlaying>{
           height: MediaQuery.of(context).size.width,
           child: CircleAvatar(
             radius: double.infinity,
-            backgroundColor: Color(0xff510723),
+            backgroundColor: const Color(0xff510723),
             child: Container(
               padding: const EdgeInsets.all(50),
               child: const Image(
@@ -58,7 +91,7 @@ class _NowPlayingState extends State<NowPlaying>{
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                widget.song.title,
+                current.title,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontFamily: "Orelega",
@@ -67,7 +100,7 @@ class _NowPlayingState extends State<NowPlaying>{
                 ),
               ),
               Text(
-                widget.song.artist == "<unknown>" ? "unknown" : widget.song.artist!,
+                current.artist == "<unknown>" ? "unknown" : current.artist!,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontFamily: "Orelega",
@@ -115,8 +148,9 @@ class _NowPlayingState extends State<NowPlaying>{
           padding: const EdgeInsets.only(right: 25,left: 25,top: 15,bottom: 15),
           width: double.infinity,
           child: ProgressBar(
-            progress: Duration(seconds: 0),
-            total: Duration(milliseconds: widget.song.duration!),
+            progress: currentPosition,
+            total: Duration(milliseconds: current.duration!),
+            onSeek: (position) => App.seekSong(position),
             baseBarColor: Colors.white,
             progressBarColor: const Color(0xff510723),
             thumbColor: const Color(0xff510723),
@@ -141,13 +175,21 @@ class _NowPlayingState extends State<NowPlaying>{
                   height: 30,
                   width: 30,
                 ),
+                onTap: (){
+                  setState(() {
+                    current = App.previousSong();
+                  });
+                },
               ),
               GestureDetector(
-                child: const Image(
-                  image: AssetImage("icons/play.png"),
+                child: Image(
+                  image: AssetImage(App.musicIsPlaying ? "icons/pause.png" : "icons/play.png"),
                   height: 50,
                   width: 50,
                 ),
+                onTap: (){
+                  App.playOrpause();
+                },
               ),
               GestureDetector(
                 child: const Image(
@@ -156,6 +198,11 @@ class _NowPlayingState extends State<NowPlaying>{
                   height: 30,
                   width: 30,
                 ),
+                onTap: (){
+                  setState(() {
+                    current = App.nextSong();
+                  });
+                },
               ),
             ],
           ),

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:media_player/FrontEnd/NowPlaying.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
+import '../BackEnd/App.dart';
+
 class SongTile extends StatelessWidget{
   final SongModel song;
   const SongTile({super.key,required this.song});
@@ -77,6 +79,10 @@ class SongTile extends StatelessWidget{
         ),
       ),
       onTap: (){
+        if(!(App.currentSong == song)){
+          App.playSong(song);
+        }
+
         Navigator.push(context, MaterialPageRoute(builder: (context) => NowPlaying(song: song)));
       },
     );
