@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:media_player/FrontEnd/Dashboard.dart';
+import '../BackEnd/App.dart';
 import 'Internet.dart';
 import 'Music.dart';
 import 'Video.dart';
@@ -29,15 +30,143 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
 
   @override
   Widget build(BuildContext context){
+    final tabs = TabBarView(
+      controller: controller,
+      children: const [
+        Dashboard(),
+        Music(),
+        Video(),
+        Internet()
+      ],
+    );
+
+    final miniDisplay = Container(
+      padding: EdgeInsets.only(right: 8,left: 8),
+      height: MediaQuery.of(context).size.height/10,
+      child: Card(
+        clipBehavior: Clip.antiAliasWithSaveLayer,
+        elevation: 5,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        color: const Color(0xff5C1C14),
+        child: Column(
+          children: [
+            Expanded(
+              flex: 25,
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: Container(
+                      padding: const EdgeInsets.all(7),
+                      child: AspectRatio(
+                        aspectRatio: 1/1,
+                        child: Card(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                          color: Color(0xff510723),
+                          child: Container(
+                            margin: EdgeInsets.all(10),
+                            // padding: const EdgeInsets.all(20),
+                            child: const Image(
+                              image: AssetImage("icons/wave.png"),
+                            ),
+                          ),
+                        ),
+                      )
+                    ),
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.only(top: 5),
+                          child: Text(
+                            "Runaway Kanye West",
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontFamily: "Orelega",
+                              fontSize: 18,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Container(
+                            child: Container(
+                              padding: const EdgeInsets.only(top: 10,bottom: 10),
+                              width: MediaQuery.of(context).size.width/2,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  GestureDetector(
+                                    child: const Image(
+                                      image: AssetImage("icons/previous.png"),
+                                      color: Colors.white,
+                                      height: 20,
+                                      width: 20,
+                                    ),
+
+                                  ),
+                                  GestureDetector(
+                                    child: Image(
+                                      color: Colors.white,
+                                      image: AssetImage(App.musicIsPlaying ? "icons/pause2.png" : "icons/play2.png"),
+                                      height: 30,
+                                      width: 30,
+                                    ),
+
+                                  ),
+                                  GestureDetector(
+                                    child: const Image(
+                                      image: AssetImage("icons/next.png"),
+                                      color: Colors.white,
+                                      height: 20,
+                                      width: 20,
+                                    ),
+                                    onTap: (){
+
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ),
+            Expanded(
+              flex: 1,
+              child: LinearProgressIndicator(
+                backgroundColor: Colors.white10,
+                value: 0.8,
+                minHeight: 2,
+                color: Colors.white,
+              )
+            )
+          ],
+        )
+      ),
+    );
+
     return Scaffold(
       backgroundColor: const Color(0xff781F15),
-      body: TabBarView(
-        controller: controller,
-        children: const [
-          Dashboard(),
-          Music(),
-          Video(),
-          Internet()
+      body: Stack(
+        children: [
+          Container(
+            alignment: Alignment.center,
+            padding: const EdgeInsets.all(0),
+            child: tabs,
+          ),
+          Container(
+            alignment: Alignment.bottomCenter,
+            padding: const EdgeInsets.all(0),
+            child: miniDisplay,
+          )
         ],
       ),
       bottomNavigationBar: Container(

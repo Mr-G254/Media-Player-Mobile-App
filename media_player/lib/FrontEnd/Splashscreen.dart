@@ -40,6 +40,8 @@ class _SplashscreenState extends State<Splashscreen>{
 
   @override
   Widget build(BuildContext context){
+    App.minDisplayHeight = MediaQuery.of(context).size.height/10;
+
     const window = Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [

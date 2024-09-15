@@ -1,4 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:media_player/FrontEnd/Components.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
@@ -6,12 +7,14 @@ abstract class App{
   static OnAudioQuery _audioQuery = OnAudioQuery();
   static AudioPlayer player = AudioPlayer();
   static List<SongModel> allSongs = [];
-  static List<SongTile> songDisplay= [];
+  static List<Widget> songDisplay= [];
   static List<String> allVideos = [];
 
   static bool musicIsPlaying = false;
   static SongModel? currentSong;
   static double songPosition = 0.0;
+
+  static double minDisplayHeight = 0;
 
   static Future<void> initialize()async{
     await _audioQuery.checkAndRequest(retryRequest: true);
@@ -23,6 +26,7 @@ abstract class App{
       }
 
     });
+    songDisplay.add(SizedBox(height: minDisplayHeight));
 
     player.setReleaseMode(ReleaseMode.stop);
 

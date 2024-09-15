@@ -80,6 +80,8 @@ flutter:
     - icons/play.png
     - icons/pause.png
     - icons/next.png
+    - icons/pause2.png
+    - icons/play2.png
 
   fonts:
     - family: Orelega

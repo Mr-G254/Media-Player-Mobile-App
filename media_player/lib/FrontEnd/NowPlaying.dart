@@ -164,7 +164,8 @@ class _NowPlayingState extends State<NowPlaying>{
           )
         ),
         Container(
-          padding: const EdgeInsets.only(top: 20,right: 40,left: 40),
+          padding: const EdgeInsets.only(top: 20),
+          width: MediaQuery.of(context).size.width/2,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
