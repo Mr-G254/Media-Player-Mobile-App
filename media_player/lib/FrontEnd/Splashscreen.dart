@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import '../BackEnd/App.dart';
 import 'Home.dart';
@@ -18,11 +19,13 @@ class _SplashscreenState extends State<Splashscreen>{
   void initState(){
     // TODO: implement initState
     super.initState();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
 
     initialize();
-    // timer = Timer(const Duration(seconds: 2), (){
-    //
-    // });
+
   }
 
   void initialize()async{

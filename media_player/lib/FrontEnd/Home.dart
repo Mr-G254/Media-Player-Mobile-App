@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:media_player/FrontEnd/Dashboard.dart';
 import '../BackEnd/App.dart';
@@ -14,7 +16,10 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> with TickerProviderStateMixin{
   late TabController controller;
+  late StreamSubscription<Duration> progressEvent;
+  late StreamSubscription<void> onEndEvent;
   int currentIndex = 0;
+  double currentPosition = 0.0;
 
   @override
   void initState() {
@@ -24,6 +29,18 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     controller.addListener((){
       setState(() {
         currentIndex = controller.index;
+      });
+    });
+
+    progressEvent = App.player.onPositionChanged.listen((dur){
+      setState(() {
+        currentPosition = dur.inMilliseconds/App.currentSongDuration!;
+      });
+    });
+
+    onEndEvent = App.player.onPlayerComplete.listen((dur){
+      setState(() {
+        App.nextSong();
       });
     });
   }
@@ -57,12 +74,12 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                   Expanded(
                     flex: 1,
                     child: Container(
-                      padding: const EdgeInsets.all(7),
+                      padding: const EdgeInsets.all(5),
                       child: AspectRatio(
                         aspectRatio: 1/1,
                         child: Card(
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                          color: Color(0xff510723),
+                          color: const Color(0xff510723),
                           child: Container(
                             margin: EdgeInsets.all(10),
                             // padding: const EdgeInsets.all(20),
@@ -77,16 +94,16 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                   Expanded(
                     flex: 3,
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
                           padding: const EdgeInsets.only(top: 5),
                           child: Text(
-                            "Runaway Kanye West",
+                            App.currentSong!.title,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontFamily: "Orelega",
-                              fontSize: 18,
+                              fontSize: 16,
                               color: Colors.white,
                             ),
                           ),
@@ -106,16 +123,24 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                                       height: 20,
                                       width: 20,
                                     ),
-
+                                    onTap: (){
+                                      setState(() {
+                                        App.previousSong();
+                                      });
+                                    },
                                   ),
                                   GestureDetector(
                                     child: Image(
                                       color: Colors.white,
                                       image: AssetImage(App.musicIsPlaying ? "icons/pause2.png" : "icons/play2.png"),
-                                      height: 30,
-                                      width: 30,
+                                      height: 20,
+                                      width: 20,
                                     ),
-
+                                    onTap: (){
+                                      setState(() {
+                                        App.playOrpause();
+                                      });
+                                    },
                                   ),
                                   GestureDetector(
                                     child: const Image(
@@ -125,7 +150,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                                       width: 20,
                                     ),
                                     onTap: (){
-
+                                      setState(() {
+                                        App.nextSong();
+                                      });
                                     },
                                   ),
                                 ],
@@ -135,6 +162,10 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                         )
                       ],
                     ),
+                  ),
+                  const Expanded(
+                    flex: 1,
+                    child: SizedBox(),
                   )
                 ],
               ),
@@ -143,7 +174,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
               flex: 1,
               child: LinearProgressIndicator(
                 backgroundColor: Colors.white10,
-                value: 0.8,
+                value: currentPosition.isInfinite ? 0 : currentPosition,
                 minHeight: 2,
                 color: Colors.white,
               )
@@ -194,11 +225,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                     ),
                   ),
                   onTap: (){
+                    controller.animateTo(0);
                     setState(() {
                       currentIndex = 0;
                     });
 
-                    controller.animateTo(currentIndex);
                   },
                 ),
                 GestureDetector(
@@ -212,10 +243,10 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                     ),
                   ),
                   onTap: (){
+                    controller.animateTo(1);
                     setState(() {
                       currentIndex = 1;
                     });
-                    controller.animateTo(currentIndex);
                   },
                 ),
                 GestureDetector(
@@ -229,10 +260,10 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                     ),
                   ),
                   onTap: (){
+                    controller.animateTo(2);
                     setState(() {
                       currentIndex = 2;
                     });
-                    controller.animateTo(currentIndex);
                   },
                 ),
                 GestureDetector(
@@ -246,10 +277,10 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                     ),
                   ),
                   onTap: (){
+                    controller.animateTo(3);
                     setState(() {
                       currentIndex = 3;
                     });
-                    controller.animateTo(currentIndex);
                   },
                 )
               ],

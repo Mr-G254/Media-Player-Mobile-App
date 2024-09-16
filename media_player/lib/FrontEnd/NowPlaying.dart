@@ -42,7 +42,7 @@ class _NowPlayingState extends State<NowPlaying>{
     // TODO: implement dispose
     super.dispose();
     progressEvent.cancel();
-    // onEndEvent.cancel();
+    onEndEvent.cancel();
   }
 
   @override

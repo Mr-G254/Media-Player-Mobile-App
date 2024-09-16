@@ -1,8 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:media_player/FrontEnd/NowPlaying.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-
 import '../BackEnd/App.dart';
 
 class SongTile extends StatelessWidget{
@@ -33,7 +31,7 @@ class SongTile extends StatelessWidget{
                 width: 30,
               ),
             ),
-            SizedBox(width: 10,),
+            const SizedBox(width: 10,),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

@@ -12,6 +12,7 @@ abstract class App{
 
   static bool musicIsPlaying = false;
   static SongModel? currentSong;
+  static int? currentSongDuration;
   static double songPosition = 0.0;
 
   static double minDisplayHeight = 0;
@@ -26,14 +27,18 @@ abstract class App{
       }
 
     });
-    songDisplay.add(SizedBox(height: minDisplayHeight));
 
+    songDisplay.add(SizedBox(height: minDisplayHeight));
+    currentSong = allSongs[0];
+    currentSongDuration = currentSong!.duration;
+    player.setSourceDeviceFile(currentSong!.data);
     player.setReleaseMode(ReleaseMode.stop);
 
   }
   
   static void playSong(SongModel song){
     currentSong = song;
+    currentSongDuration = song.duration;
     player.play(DeviceFileSource(song.data));
     musicIsPlaying = true;
 
