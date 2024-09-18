@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:media_player/BackEnd/Database.dart';
 import 'package:media_player/FrontEnd/Dashboard.dart';
 import '../BackEnd/App.dart';
 import 'Internet.dart';
@@ -15,6 +16,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> with TickerProviderStateMixin{
+  late AppLifecycleListener listener;
   late TabController controller;
   late StreamSubscription<Duration> progressEvent;
   late StreamSubscription<void> onEndEvent;
@@ -25,6 +27,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
   void initState() {
     // TODO: implement initState
     super.initState();
+    listener = AppLifecycleListener(onStateChange: (val){
+      App.close();
+    });
     controller = TabController(length: 4, vsync: this,initialIndex: currentIndex);
     controller.addListener((){
       setState(() {
@@ -43,6 +48,18 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
         App.nextSong();
       });
     });
+
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    progressEvent.cancel();
+    onEndEvent.cancel();
+    listener.dispose();
+    // TODO: implement dispose
+    super.dispose();
+
   }
 
   @override
@@ -137,6 +154,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                                       width: 20,
                                     ),
                                     onTap: (){
+                                      print(AppDatabase.recentSongs);
                                       setState(() {
                                         App.playOrpause();
                                       });

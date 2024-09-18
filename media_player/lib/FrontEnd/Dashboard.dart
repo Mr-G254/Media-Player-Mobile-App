@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../BackEnd/App.dart';
+
 class Dashboard extends StatefulWidget{
   const Dashboard({super.key});
 
@@ -124,7 +126,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
               child: GestureDetector(
                 child: recent,
                 onTap: (){
-                  controller.animateTo(currentIndex);
+                  controller.animateTo(0);
                   setState(() {
                     currentIndex = 0;
                   });
@@ -136,7 +138,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
               child: GestureDetector(
                 child: playlist,
                 onTap: (){
-                  controller.animateTo(currentIndex);
+                  controller.animateTo(1);
                   setState(() {
                     currentIndex = 1;
                   });
@@ -147,7 +149,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
               child: GestureDetector(
                 child: favourite,
                 onTap: (){
-                  controller.animateTo(currentIndex);
+                  controller.animateTo(2);
                   setState(() {
                     currentIndex = 2;
                   });
@@ -174,7 +176,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
               ListView(
                   padding: EdgeInsets.zero,
                   shrinkWrap: true,
-                  children: []
+                  children: App.recentDisplay
               ),
               ListView(
                   padding: EdgeInsets.zero,
