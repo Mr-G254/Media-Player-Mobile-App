@@ -30,10 +30,9 @@ abstract class AppDatabase{
 
   static Future<void> getRecentSongs()async{
     var list = await db.query('Recent',columns: ['path']);
-    print('object');
+
     recentSongs.clear();
     for(final i in list){
-      print(i['path']);
       recentSongs.add(i['path'] as String);
     }
 

@@ -19,11 +19,13 @@ class _NowPlayingState extends State<NowPlaying>{
   late StreamSubscription<Duration> progressEvent;
   late StreamSubscription<void> onEndEvent;
   late SongModel current = widget.song;
+  late bool isFavourite;
   
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    isFavourite = App.favouriteSongs.contains(widget.song);
     progressEvent = App.player.onPositionChanged.listen((dur){
       setState(() {
         currentPosition = dur;
@@ -126,12 +128,27 @@ class _NowPlayingState extends State<NowPlaying>{
                 ),
               ),
               GestureDetector(
-                child: const Image(
-                  image: AssetImage("icons/heart.png"),
+                child: Image(
+                  image: AssetImage(isFavourite ? "icons/heart2.png" : "icons/heart.png"),
                   color: Colors.white,
                   height: 30,
                   width: 30,
                 ),
+                onTap: (){
+                  if(isFavourite){
+                    App.deleteFavourite(widget.song);
+
+                    setState(() {
+                      isFavourite = false;
+                    });
+                  }else{
+                    App.addFavourite(widget.song);
+
+                    setState(() {
+                      isFavourite = true;
+                    });
+                  }
+                },
               ),
               GestureDetector(
                 child: const Image(
@@ -179,6 +196,7 @@ class _NowPlayingState extends State<NowPlaying>{
                 onTap: (){
                   setState(() {
                     current = App.previousSong();
+                    isFavourite = App.favouriteSongs.contains(current);
                   });
                 },
               ),
@@ -202,6 +220,7 @@ class _NowPlayingState extends State<NowPlaying>{
                 onTap: (){
                   setState(() {
                     current = App.nextSong();
+                    isFavourite = App.favouriteSongs.contains(current);
                   });
                 },
               ),

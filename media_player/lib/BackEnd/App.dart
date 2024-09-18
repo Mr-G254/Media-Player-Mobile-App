@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:media_player/BackEnd/Database.dart';
 import 'package:media_player/FrontEnd/Components.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:flutter/foundation.dart';
 
 abstract class App{
   static OnAudioQuery _audioQuery = OnAudioQuery();
@@ -12,15 +12,18 @@ abstract class App{
   static List<SongModel> allSongs = [];
   static List<SongModel> recentSongs = [];
   static List<SongModel> favouriteSongs = [];
+  static List<SongModel> currentSongList = [];
 
   static List<String> allVideos = [];
 
   static List<Widget> songDisplay= [];
   static List<Widget> recentDisplay= [];
-  static List<Widget> favouriteDisplay= [];
+  static ValueNotifier<List<Widget>> favouriteDisplay= ValueNotifier([]);
+
+  static String currentList = "all";
 
   static bool musicIsPlaying = false;
-  static SongModel? currentSong;
+  static late ValueNotifier<SongModel> currentSong;
   static int? currentSongDuration;
   static double songPosition = 0.0;
 
@@ -33,11 +36,16 @@ abstract class App{
 
     allSongs.forEach((val){
       if(val.isMusic == true){
-        songDisplay.add(SongTile(song: val));
+        songDisplay.add(SongTile(song: val, list: 'all',),);
         
         if(AppDatabase.recentSongs.contains(val.data)){
           recentSongs.add(val);
-          recentDisplay.add(SongTile(song: val));
+          recentDisplay.add(SongTile(song: val, list: 'recent',));
+        }
+
+        if(AppDatabase.favouriteSongs.contains(val.data)){
+          favouriteSongs.add(val);
+          favouriteDisplay.value.add(SongTile(song: val, list: 'favourite',));
         }
       }
 
@@ -47,23 +55,34 @@ abstract class App{
     recentDisplay.add(SizedBox(height: minDisplayHeight));
     refreshRecentDisplay();
 
-    currentSong = allSongs[0];
-    currentSongDuration = currentSong!.duration;
-    player.setSourceDeviceFile(currentSong!.data);
+    if(recentSongs.isNotEmpty){
+      currentSong = ValueNotifier<SongModel>(recentSongs[0]);
+    }else{
+      currentSong = ValueNotifier<SongModel>(allSongs[0]);
+    }
+
+    currentSongList = allSongs;
+    currentList = "all";
+    currentSongDuration = currentSong.value.duration;
+    player.setSourceDeviceFile(currentSong.value.data);
     player.setReleaseMode(ReleaseMode.stop);
 
   }
   
   static void playSong(SongModel song){
-    currentSong = song;
+    currentSong.value = song;
     currentSongDuration = song.duration;
     player.play(DeviceFileSource(song.data));
     musicIsPlaying = true;
-    addRecent(song);
+
+    if(currentList != 'recent'){
+      addRecent(song);
+    }
+
   }
 
   static void playOrpause(){
-    if(!(currentSong == null)){
+    if(!(currentSong.value == null)){
       if(musicIsPlaying){
         player.pause();
         musicIsPlaying = false;
@@ -76,41 +95,55 @@ abstract class App{
   }
 
   static SongModel nextSong(){
-    var index = allSongs.indexOf(currentSong!);
+    var index = currentSongList.indexOf(currentSong.value);
 
-    if(index == allSongs.length - 1){
+    if(index == currentSongList.length - 1){
       index = 0;
     }else{
       ++index;
     }
 
-    playSong(allSongs[index]);
-    return allSongs[index];
+    playSong(currentSongList[index]);
+    return currentSongList[index];
+
   }
 
   static SongModel previousSong(){
-    var index = allSongs.indexOf(currentSong!);
+    var index = currentSongList.indexOf(currentSong.value);
 
     if(index == 0){
-      index = allSongs.length - 1;
+      index = currentSongList.length - 1;
     }else{
       --index;
     }
 
-    playSong(allSongs[index]);
-    return allSongs[index];
+    playSong(currentSongList[index]);
+    return currentSongList[index];
   }
 
   static void seekSong(Duration dur){
     player.seek(dur);
   }
 
-  static void addFavourite(SongModel song){
-    AppDatabase.addFavouriteSong(song.data);
+  static Future<void> addFavourite(SongModel song)async{
+    await AppDatabase.addFavouriteSong(song.data);
+    favouriteSongs.clear();
+    favouriteDisplay.value.clear();
+
+    for(final i in allSongs){
+      if(AppDatabase.favouriteSongs.contains(i.data)){
+        favouriteSongs.add(i);
+        favouriteDisplay.value.add(SongTile(song: i, list: "favourite"));
+      }
+    }
   }
 
   static void deleteFavourite(SongModel song){
     AppDatabase.deleteFavouriteSong(song.data);
+
+    final index = favouriteSongs.indexOf(song);
+    favouriteDisplay.value.removeAt(index);
+    favouriteSongs.remove(song);
   }
 
   static void addRecent(SongModel song){
@@ -129,7 +162,7 @@ abstract class App{
   static void refreshRecentDisplay(){
     recentDisplay.clear();
     for(final i in recentSongs){
-      recentDisplay.add(SongTile(song: i));
+      recentDisplay.add(SongTile(song: i, list: 'recent',));
     }
 
     recentDisplay.add(SizedBox(height: minDisplayHeight));

@@ -117,6 +117,17 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
       ),
     );
 
+    final fav = ValueListenableBuilder(
+      valueListenable: App.favouriteDisplay,
+      builder: (context,value,child){
+        return ListView(
+            padding: EdgeInsets.zero,
+            shrinkWrap: true,
+            children: value
+        );
+      }
+    );
+
     final window = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -183,11 +194,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
                   shrinkWrap: true,
                   children: []
               ),
-              ListView(
-                  padding: EdgeInsets.zero,
-                  shrinkWrap: true,
-                  children: []
-              ),
+              fav
             ],
           )
         ),

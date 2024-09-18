@@ -116,7 +116,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                         Container(
                           padding: const EdgeInsets.only(top: 5),
                           child: Text(
-                            App.currentSong!.title,
+                            App.currentSong!.value.title,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontFamily: "Orelega",
