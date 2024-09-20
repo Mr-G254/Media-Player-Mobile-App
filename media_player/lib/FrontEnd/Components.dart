@@ -111,3 +111,55 @@ class SongTile extends StatelessWidget {
     );
   }
 }
+
+class PlaylistTile extends StatelessWidget{
+  const PlaylistTile({super.key});
+
+  @override
+  Widget build(BuildContext context){
+    return GestureDetector(
+      child: Container(
+        padding: const EdgeInsets.all(2),
+        child: Card(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          color: Color(0xff510723),
+          child: Stack(
+            children: [
+              Container(
+                alignment: Alignment.center,
+                padding: EdgeInsets.all(30),
+                child: const Image(
+                  image: AssetImage("icons/playlist.png"),
+                ),
+              ),
+              Container(
+                alignment: Alignment.topRight,
+                padding: const EdgeInsets.only(top: 5,right: 7),
+                child: Text(
+                  '10 songs',
+                  style: const TextStyle(
+                    fontFamily: "Orelega",
+                    fontSize: 15,
+                    color: Colors.white54,
+                  ),
+                ),
+              ),
+              Container(
+                alignment: Alignment.bottomLeft,
+                padding: const EdgeInsets.only(bottom: 5,left: 8),
+                child: Text(
+                  'Dave',
+                  style: const TextStyle(
+                    fontFamily: "Orelega",
+                    fontSize: 17,
+                    color: Colors.white,
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+      )
+    );
+  }
+}

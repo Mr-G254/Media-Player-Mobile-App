@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:media_player/FrontEnd/Components.dart';
 
 import '../BackEnd/App.dart';
 
@@ -117,6 +118,17 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
       ),
     );
 
+    final rec = ValueListenableBuilder(
+        valueListenable: App.recentDisplay,
+        builder: (context,value,child){
+          return ListView(
+              padding: EdgeInsets.zero,
+              shrinkWrap: true,
+              children: value
+          );
+        }
+    );
+
     final fav = ValueListenableBuilder(
       valueListenable: App.favouriteDisplay,
       builder: (context,value,child){
@@ -169,30 +181,45 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
             ),
           ],
         ),
-        Container(
-          padding: const EdgeInsets.only(left: 10,top: 5,bottom: 5),
-          child: Text(
-            currentIndex == 0 ? "Recent" : currentIndex == 1 ? "Playlist" : "Favourite",
-            style: const TextStyle(
-              fontFamily: "Orelega",
-              fontSize: 19,
-              color: Colors.white,
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.only(left: 10,top: 5,bottom: 5),
+              child: Text(
+                currentIndex == 0 ? "Recent" : currentIndex == 1 ? "Playlist" : "Favourite",
+                style: const TextStyle(
+                  fontFamily: "Orelega",
+                  fontSize: 19,
+                  color: Colors.white,
+                ),
+              ),
             ),
-          ),
+            Visibility(
+              visible: currentIndex == 1,
+              child: Container(
+                padding: const EdgeInsets.only(left: 10),
+                child: Card(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                  color: Color(0xff510723),
+                  child: const Icon(Icons.add,size: 28,color: Colors.white,weight: 0.1,)
+                ),
+              )
+            )
+          ],
         ),
         Expanded(
           child: TabBarView(
             controller: controller,
             children: [
-              ListView(
-                  padding: EdgeInsets.zero,
-                  shrinkWrap: true,
-                  children: App.recentDisplay
-              ),
-              ListView(
-                  padding: EdgeInsets.zero,
-                  shrinkWrap: true,
-                  children: []
+              rec,
+              GridView.extent(
+                maxCrossAxisExtent: MediaQuery.of(context).size.width/2,
+                children: [
+                  PlaylistTile(),
+                  PlaylistTile(),
+                  PlaylistTile(),
+                  PlaylistTile()
+                ],
               ),
               fav
             ],

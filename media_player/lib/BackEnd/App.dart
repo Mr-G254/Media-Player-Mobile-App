@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:media_player/BackEnd/Database.dart';
 import 'package:media_player/FrontEnd/Components.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:flutter/foundation.dart';
 
 abstract class App{
   static OnAudioQuery _audioQuery = OnAudioQuery();
@@ -17,7 +16,7 @@ abstract class App{
   static List<String> allVideos = [];
 
   static List<Widget> songDisplay= [];
-  static List<Widget> recentDisplay= [];
+  static ValueNotifier<List<Widget>> recentDisplay= ValueNotifier([]);
   static ValueNotifier<List<Widget>> favouriteDisplay= ValueNotifier([]);
 
   static String currentList = "all";
@@ -40,7 +39,7 @@ abstract class App{
         
         if(AppDatabase.recentSongs.contains(val.data)){
           recentSongs.add(val);
-          recentDisplay.add(SongTile(song: val, list: 'recent',));
+          recentDisplay.value.add(SongTile(song: val, list: 'recent',));
         }
 
         if(AppDatabase.favouriteSongs.contains(val.data)){
@@ -52,8 +51,7 @@ abstract class App{
     });
 
     songDisplay.add(SizedBox(height: minDisplayHeight));
-    recentDisplay.add(SizedBox(height: minDisplayHeight));
-    refreshRecentDisplay();
+    recentDisplay.value.add(SizedBox(height: minDisplayHeight));
 
     if(recentSongs.isNotEmpty){
       currentSong = ValueNotifier<SongModel>(recentSongs[0]);
@@ -82,14 +80,12 @@ abstract class App{
   }
 
   static void playOrpause(){
-    if(!(currentSong.value == null)){
-      if(musicIsPlaying){
-        player.pause();
-        musicIsPlaying = false;
-      }else{
-        player.resume();
-        musicIsPlaying = true;
-      }
+    if(musicIsPlaying){
+      player.pause();
+      musicIsPlaying = false;
+    }else{
+      player.resume();
+      musicIsPlaying = true;
     }
 
   }
@@ -160,12 +156,14 @@ abstract class App{
   }
 
   static void refreshRecentDisplay(){
-    recentDisplay.clear();
+    List<Widget> rec = [];
+
     for(final i in recentSongs){
-      recentDisplay.add(SongTile(song: i, list: 'recent',));
+      rec.add(SongTile(song: i, list: 'recent',));
     }
 
-    recentDisplay.add(SizedBox(height: minDisplayHeight));
+    rec.add(SizedBox(height: minDisplayHeight));
+    recentDisplay.value = rec;
   }
 
   static void close()async{

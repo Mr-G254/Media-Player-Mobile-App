@@ -1,11 +1,10 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:media_player/BackEnd/Database.dart';
 import 'package:media_player/FrontEnd/Dashboard.dart';
 import '../BackEnd/App.dart';
 import 'Internet.dart';
 import 'Music.dart';
+import 'NowPlaying.dart';
 import 'Video.dart';
 
 class Home extends StatefulWidget {
@@ -98,7 +97,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                           color: const Color(0xff510723),
                           child: Container(
-                            margin: EdgeInsets.all(10),
+                            margin: const EdgeInsets.all(10),
                             // padding: const EdgeInsets.all(20),
                             child: const Image(
                               image: AssetImage("icons/wave.png"),
@@ -116,7 +115,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                         Container(
                           padding: const EdgeInsets.only(top: 5),
                           child: Text(
-                            App.currentSong!.value.title,
+                            App.currentSong.value.title,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontFamily: "Orelega",
@@ -134,11 +133,14 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   GestureDetector(
-                                    child: const Image(
-                                      image: AssetImage("icons/previous.png"),
-                                      color: Colors.white,
-                                      height: 20,
-                                      width: 20,
+                                    child: Container(
+                                      padding: EdgeInsets.all(0),
+                                      child: const Image(
+                                        image: AssetImage("icons/previous.png"),
+                                        color: Colors.white,
+                                        height: 20,
+                                        width: 20,
+                                      ),
                                     ),
                                     onTap: (){
                                       setState(() {
@@ -147,25 +149,30 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                                     },
                                   ),
                                   GestureDetector(
-                                    child: Image(
-                                      color: Colors.white,
-                                      image: AssetImage(App.musicIsPlaying ? "icons/pause2.png" : "icons/play2.png"),
-                                      height: 20,
-                                      width: 20,
+                                    child: Container(
+                                      padding: EdgeInsets.all(0),
+                                      child: Image(
+                                        color: Colors.white,
+                                        image: AssetImage(App.musicIsPlaying ? "icons/pause2.png" : "icons/play2.png"),
+                                        height: 20,
+                                        width: 20,
+                                      ),
                                     ),
                                     onTap: (){
-                                      print(AppDatabase.recentSongs);
                                       setState(() {
                                         App.playOrpause();
                                       });
                                     },
                                   ),
                                   GestureDetector(
-                                    child: const Image(
-                                      image: AssetImage("icons/next.png"),
-                                      color: Colors.white,
-                                      height: 20,
-                                      width: 20,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(0),
+                                      child: const Image(
+                                        image: AssetImage("icons/next.png"),
+                                        color: Colors.white,
+                                        height: 20,
+                                        width: 20,
+                                      ),
                                     ),
                                     onTap: (){
                                       setState(() {
@@ -202,6 +209,95 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
       ),
     );
 
+    final bottomNav = Container(
+      color: Colors.transparent,
+      padding: const EdgeInsets.only(bottom: 10,right: 20,left: 20),
+      child: Card(
+        elevation: 5,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        color: const Color(0xff510723),
+        child: Container(
+          padding: const EdgeInsets.all(0),
+          height: 60,
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              GestureDetector(
+                child: Container(
+                  padding: const EdgeInsets.only(right: 20,left: 20),
+                  child: Image(
+                    image: const AssetImage("icons/dashboard.png"),
+                    color: currentIndex == 0 ? null : const Color(0xffE1246B),
+                    height: 30,
+                    width: 30,
+                  ),
+                ),
+                onTap: (){
+                  controller.animateTo(0);
+                  setState(() {
+                    currentIndex = 0;
+                  });
+
+                },
+              ),
+              GestureDetector(
+                child: Container(
+                  padding: const EdgeInsets.only(right: 20,left: 20),
+                  child: Image(
+                    image: const AssetImage("icons/music.png"),
+                    color: currentIndex == 1 ? null : const Color(0xffE1246B),
+                    height: 30,
+                    width: 30,
+                  ),
+                ),
+                onTap: (){
+                  controller.animateTo(1);
+                  setState(() {
+                    currentIndex = 1;
+                  });
+                },
+              ),
+              GestureDetector(
+                child: Container(
+                  padding: const EdgeInsets.only(right: 20,left: 20),
+                  child: Image(
+                    image: const AssetImage("icons/video.png"),
+                    color: currentIndex == 2 ? null : const Color(0xffE1246B),
+                    height: 30,
+                    width: 30,
+                  ),
+                ),
+                onTap: (){
+                  controller.animateTo(2);
+                  setState(() {
+                    currentIndex = 2;
+                  });
+                },
+              ),
+              GestureDetector(
+                child: Container(
+                  padding: const EdgeInsets.only(right: 20,left: 20),
+                  child: Image(
+                    image: const AssetImage("icons/internet.png"),
+                    color: currentIndex == 3 ? null : const Color(0xffE1246B),
+                    height: 30,
+                    width: 30,
+                  ),
+                ),
+                onTap: (){
+                  controller.animateTo(3);
+                  setState(() {
+                    currentIndex = 3;
+                  });
+                },
+              )
+            ],
+          ),
+        )
+      ),
+    );
+
     return Scaffold(
       backgroundColor: const Color(0xff781F15),
       body: Stack(
@@ -214,98 +310,25 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
           Container(
             alignment: Alignment.bottomCenter,
             padding: const EdgeInsets.all(0),
-            child: miniDisplay,
+            child: GestureDetector(
+              behavior: HitTestBehavior.deferToChild,
+              child: miniDisplay,
+              onTap: (){
+                Navigator.push(context, PageRouteBuilder(
+                    pageBuilder: (context,animation,secondaryAnimation) =>NowPlaying(song: App.currentSong.value),
+                    transitionsBuilder: (context,animation,secondaryAnimation,child){
+                      return SlideTransition(
+                        position: animation.drive(Tween(begin: const Offset(0, 1),end: const Offset(0, 0)).chain(CurveTween(curve: Curves.easeOut))),
+                        child: child,
+                      );
+                    }
+                ));
+              },
+            ),
           )
         ],
       ),
-      bottomNavigationBar: Container(
-        color: Colors.transparent,
-        padding: const EdgeInsets.only(bottom: 10,right: 20,left: 20),
-        child: Card(
-          elevation: 5,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          color: const Color(0xff510723),
-          child: Container(
-            padding: const EdgeInsets.all(0),
-            height: 60,
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                GestureDetector(
-                  child: Container(
-                    padding: const EdgeInsets.only(right: 20,left: 20),
-                    child: Image(
-                      image: const AssetImage("icons/dashboard.png"),
-                      color: currentIndex == 0 ? null : const Color(0xffE1246B),
-                      height: 30,
-                      width: 30,
-                    ),
-                  ),
-                  onTap: (){
-                    controller.animateTo(0);
-                    setState(() {
-                      currentIndex = 0;
-                    });
-
-                  },
-                ),
-                GestureDetector(
-                  child: Container(
-                    padding: const EdgeInsets.only(right: 20,left: 20),
-                    child: Image(
-                      image: const AssetImage("icons/music.png"),
-                      color: currentIndex == 1 ? null : const Color(0xffE1246B),
-                      height: 30,
-                      width: 30,
-                    ),
-                  ),
-                  onTap: (){
-                    controller.animateTo(1);
-                    setState(() {
-                      currentIndex = 1;
-                    });
-                  },
-                ),
-                GestureDetector(
-                  child: Container(
-                    padding: const EdgeInsets.only(right: 20,left: 20),
-                    child: Image(
-                      image: const AssetImage("icons/video.png"),
-                      color: currentIndex == 2 ? null : const Color(0xffE1246B),
-                      height: 30,
-                      width: 30,
-                    ),
-                  ),
-                  onTap: (){
-                    controller.animateTo(2);
-                    setState(() {
-                      currentIndex = 2;
-                    });
-                  },
-                ),
-                GestureDetector(
-                  child: Container(
-                    padding: const EdgeInsets.only(right: 20,left: 20),
-                    child: Image(
-                      image: const AssetImage("icons/internet.png"),
-                      color: currentIndex == 3 ? null : const Color(0xffE1246B),
-                      height: 30,
-                      width: 30,
-                    ),
-                  ),
-                  onTap: (){
-                    controller.animateTo(3);
-                    setState(() {
-                      currentIndex = 3;
-                    });
-                  },
-                )
-              ],
-            ),
-          )
-        ),
-      ),
+      bottomNavigationBar: bottomNav
     );
   }
 }
