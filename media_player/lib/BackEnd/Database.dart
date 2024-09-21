@@ -1,3 +1,4 @@
+import 'package:media_player/BackEnd/Playlist.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
@@ -6,6 +7,7 @@ abstract class AppDatabase{
   static late Database db;
   static List<String> recentSongs = [];
   static List<String> favouriteSongs = [];
+  static List<Playlist> playlists = [];
 
   static Future<void> initialize()async{
     String path = p.join(await getDatabasesPath(),"App.db");
@@ -21,6 +23,7 @@ abstract class AppDatabase{
 
     await getRecentSongs();
     await getFavouriteSongs();
+    await getPlaylists();
   }
 
   static Future<void> firstTimeSetup(Database database)async{
@@ -47,6 +50,32 @@ abstract class AppDatabase{
     }
   }
 
+  static Future<void> getPlaylists()async{
+    playlists.clear();
+    var list = await db.rawQuery('SELECT name FROM sqlite_master WHERE type = "table" AND name LIKE "%playlist"');
+
+    for(final i in list){
+      var playName = i['name'] as String;
+      final playlist = Playlist(name: playName);
+      
+      var songs = await getPlaylistSongs(playName);
+      playlist.addSongs(songs);
+
+      playlists.add(playlist);
+    }
+  }
+
+  static Future<List<String>> getPlaylistSongs(String playlistName)async{
+    var list = await db.query(playlistName,columns: ['path']);
+    List<String> song = [];
+
+    for(final i in list){
+      song.add(i['path'] as String);
+    }
+    
+    return song;
+  }
+
   static Future<void> editRecentSongs(List<SongModel> songs)async{
     db.execute('DROP TABLE IF EXISTS Recent');
     await db.execute('CREATE TABLE Recent (id INTEGER PRIMARY KEY, path TEXT)');
@@ -66,6 +95,24 @@ abstract class AppDatabase{
     await db.delete('Favourite',where: 'path = ?',whereArgs: [path]);
     await getFavouriteSongs();
   }
+
+  static Future<void> createPlaylist(String playlistName)async{
+    await db.execute('CREATE TABLE ${playlistName}_playlist (id INTEGER PRIMARY KEY, path TEXT)');
+  }
+
+  static Future<void> addPlaylistSongs(String playlistName,List<SongModel> songs)async{
+    for(final i in songs){
+      await db.insert(playlistName, {'path' : i.data});
+    }
+
+  }
+
+  static Future<void> deletePlaylist(String playlistName)async{
+    db.execute('DROP TABLE IF EXISTS $playlistName');
+
+    await getPlaylists();
+  }
+
 
   static void close(){
     db.close();

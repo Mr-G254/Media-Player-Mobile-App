@@ -1,6 +1,7 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:media_player/BackEnd/Database.dart';
+import 'package:media_player/BackEnd/Playlist.dart';
 import 'package:media_player/FrontEnd/Components.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
@@ -18,6 +19,7 @@ abstract class App{
   static List<Widget> songDisplay= [];
   static ValueNotifier<List<Widget>> recentDisplay= ValueNotifier([]);
   static ValueNotifier<List<Widget>> favouriteDisplay= ValueNotifier([]);
+  static ValueNotifier<List<Widget>> playlistDisplay= ValueNotifier([]);
 
   static String currentList = "all";
 
@@ -52,6 +54,10 @@ abstract class App{
 
     songDisplay.add(SizedBox(height: minDisplayHeight));
     recentDisplay.value.add(SizedBox(height: minDisplayHeight));
+
+    for(final i in AppDatabase.playlists){
+      playlistDisplay.value.add(PlaylistTile(playlist: i));
+    }
 
     if(recentSongs.isNotEmpty){
       currentSong = ValueNotifier<SongModel>(recentSongs[0]);
@@ -119,6 +125,11 @@ abstract class App{
 
   static void seekSong(Duration dur){
     player.seek(dur);
+  }
+
+  static Future<void> createPlaylist(String playlistName)async{
+    await AppDatabase.createPlaylist(playlistName);
+    playlistDisplay.value.add(PlaylistTile(playlist: Playlist(name: '${playlistName}_playlist')));
   }
 
   static Future<void> addFavourite(SongModel song)async{

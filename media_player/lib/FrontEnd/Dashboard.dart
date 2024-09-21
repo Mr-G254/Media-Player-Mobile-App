@@ -140,6 +140,16 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
       }
     );
 
+    final play = ValueListenableBuilder(
+      valueListenable: App.playlistDisplay,
+      builder: (context,value,child){
+        return GridView.extent(
+          maxCrossAxisExtent: MediaQuery.of(context).size.width/2,
+          children: value
+        );
+      }
+    );
+
     final window = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -198,11 +208,21 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
               visible: currentIndex == 1,
               child: Container(
                 padding: const EdgeInsets.only(left: 10),
-                child: Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                  color: Color(0xff510723),
-                  child: const Icon(Icons.add,size: 28,color: Colors.white,weight: 0.1,)
-                ),
+                child: GestureDetector(
+                  child: Card(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                      color: const Color(0xff510723),
+                      child: const Icon(Icons.add,size: 28,color: Colors.white,weight: 0.1,)
+                  ),
+                  onTap: ()async{
+                    String name = await Navigator.push(context, DialogRoute(context: context, builder: (context) => const NewPlaylistDialog()));
+
+                    if(name.isNotEmpty){
+                      App.createPlaylist(name);
+                    }
+
+                  },
+                )
               )
             )
           ],
@@ -212,15 +232,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
             controller: controller,
             children: [
               rec,
-              GridView.extent(
-                maxCrossAxisExtent: MediaQuery.of(context).size.width/2,
-                children: [
-                  PlaylistTile(),
-                  PlaylistTile(),
-                  PlaylistTile(),
-                  PlaylistTile()
-                ],
-              ),
+              play,
               fav
             ],
           )
