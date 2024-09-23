@@ -3,7 +3,7 @@ class Playlist{
   final List<String> songs = [];
   Playlist({required this.name});
 
-  void addSongs(List<String> songs){
-    songs.addAll(songs);
+  void addSongs(List<String> newSongs){
+    songs.addAll(newSongs);
   }
 }

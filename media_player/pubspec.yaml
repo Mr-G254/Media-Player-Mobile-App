@@ -87,6 +87,8 @@ flutter:
     - icons/playlist.png
     - icons/favorite.png
     - icons/heart2.png
+    - icons/bin.png
+    - icons/plus.png
 
   fonts:
     - family: Orelega

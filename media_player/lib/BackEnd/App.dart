@@ -132,6 +132,14 @@ abstract class App{
     playlistDisplay.value.add(PlaylistTile(playlist: Playlist(name: '${playlistName}_playlist')));
   }
 
+  static Future<void> addSongsToPlaylist(String playlistName,List<SongModel> songs)async{
+    await AppDatabase.addPlaylistSongs(playlistName, songs);
+  }
+
+  static Future<void> removeSongFromPlaylist(String playlistName,SongModel song)async{
+    await AppDatabase.deletePlaylistSong(playlistName, song);
+  }
+
   static Future<void> addFavourite(SongModel song)async{
     await AppDatabase.addFavouriteSong(song.data);
     favouriteSongs.clear();

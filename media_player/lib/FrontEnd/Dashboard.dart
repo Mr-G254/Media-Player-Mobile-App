@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:media_player/BackEnd/Playlist.dart';
 import 'package:media_player/FrontEnd/Components.dart';
+import 'package:media_player/FrontEnd/PlaylistSongs.dart';
 
 import '../BackEnd/App.dart';
 
@@ -218,7 +220,9 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
                     String name = await Navigator.push(context, DialogRoute(context: context, builder: (context) => const NewPlaylistDialog()));
 
                     if(name.isNotEmpty){
-                      App.createPlaylist(name);
+                      await App.createPlaylist(name).then((val){
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => PlaylistSongs(playlist: Playlist(name: '${name}_playlist'))));
+                      });
                     }
 
                   },

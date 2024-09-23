@@ -56,6 +56,7 @@ abstract class AppDatabase{
 
     for(final i in list){
       var playName = i['name'] as String;
+      print(playName);
       final playlist = Playlist(name: playName);
       
       var songs = await getPlaylistSongs(playName);
@@ -66,13 +67,13 @@ abstract class AppDatabase{
   }
 
   static Future<List<String>> getPlaylistSongs(String playlistName)async{
-    var list = await db.query(playlistName,columns: ['path']);
+    var list = await db.query('[$playlistName]',columns: ['path']);
     List<String> song = [];
 
     for(final i in list){
       song.add(i['path'] as String);
     }
-    
+
     return song;
   }
 
@@ -97,18 +98,23 @@ abstract class AppDatabase{
   }
 
   static Future<void> createPlaylist(String playlistName)async{
-    await db.execute('CREATE TABLE ${playlistName}_playlist (id INTEGER PRIMARY KEY, path TEXT)');
+    await db.execute("CREATE TABLE '${playlistName}_playlist' (id INTEGER PRIMARY KEY, path TEXT)");
   }
 
   static Future<void> addPlaylistSongs(String playlistName,List<SongModel> songs)async{
     for(final i in songs){
-      await db.insert(playlistName, {'path' : i.data});
+      await db.insert('[$playlistName]', {'path' : i.data});
     }
 
   }
 
+  static Future<void> deletePlaylistSong(String playlistName,SongModel song)async{
+    await db.delete('[$playlistName]',where: 'path = ?',whereArgs: [song.data]);
+
+  }
+
   static Future<void> deletePlaylist(String playlistName)async{
-    db.execute('DROP TABLE IF EXISTS $playlistName');
+    db.execute("DROP TABLE IF EXISTS '$playlistName'");
 
     await getPlaylists();
   }
