@@ -18,6 +18,7 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
   List<SongModel> songs = [];
   List<Widget> songWidget = [];
   List<SongModel> selectedSongs = [];
+  bool loading = false;
 
   @override
   void initState() {
@@ -39,20 +40,30 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
   }
 
   void addSongs()async{
+    setState(() {
+      loading = true;
+    });
+
+    for(final i in selectedSongs){
+      widget.playlist.songs.add(i.data);
+      songWidget.add(SongTile(song: i, list: 'playlist'));
+    }
+
     await App.addSongsToPlaylist(widget.playlist.name, selectedSongs).then((val){
-      for(final i in selectedSongs){
-        widget.playlist.songs.add(i.data);
-        songWidget.add(SongTile(song: i, list: 'playlist'));
-      }
+      Navigator.pop(context,widget.playlist);
+      Navigator.push(context, MaterialPageRoute(builder: (context) => PlaylistSongs(playlist: widget.playlist)));
 
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PlaylistSongs(playlist: widget.playlist)));
-
+      setState(() {
+        loading = false;
+      });
     });
   }
 
-  void deletePlaylist(){
-    App.deletePlaylist(widget.playlist);
-    Navigator.pop(context);
+  void deletePlaylist()async{
+    await App.deletePlaylist(widget.playlist).then((onValue){
+      Navigator.pop(context);
+    });
+
   }
 
   @override
@@ -133,9 +144,11 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
                   onTap: ()async{
                     selectedSongs.clear();
                     var selected = await Navigator.push(context, DialogRoute(context: context, builder: (context) => SelectSongs(currentSongs: songs)));
-                    selectedSongs.addAll(selected);
-                    addSongs();
 
+                    if(selected != null){
+                      selectedSongs.addAll(selected);
+                      addSongs();
+                    }
                   },
                 ),
               ),
@@ -158,13 +171,33 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
       appBar: AppBar(
         backgroundColor: const Color(0xff781F15),
         leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
+          onPressed: loading ? null : (){
+            Navigator.pop(context,widget.playlist);
           },
           icon: const Icon(Icons.arrow_back_ios_new_rounded,color: Colors.white,size: 28,)
         ),
       ),
-      body: window,
+      body: Stack(
+        children: [
+          Container(
+            alignment: Alignment.center,
+            child: window,
+          ),
+          Container(
+            padding: const EdgeInsets.all(20),
+            alignment: Alignment.center,
+            child: Visibility(
+              visible: loading,
+              child: const CircularProgressIndicator(
+                strokeCap: StrokeCap.round,
+                strokeWidth: 5,
+                color: Color(0xffE1246B),
+                backgroundColor: Colors.transparent,
+              ),
+            )
+          )
+        ],
+      ),
     );
   }
 }

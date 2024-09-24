@@ -313,8 +313,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
             child: GestureDetector(
               behavior: HitTestBehavior.deferToChild,
               child: miniDisplay,
-              onTap: (){
-                Navigator.push(context, PageRouteBuilder(
+              onTap: ()async{
+                await Navigator.push(context, PageRouteBuilder(
                     pageBuilder: (context,animation,secondaryAnimation) =>NowPlaying(song: App.currentSong.value),
                     transitionsBuilder: (context,animation,secondaryAnimation,child){
                       return SlideTransition(
@@ -322,7 +322,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                         child: child,
                       );
                     }
-                ));
+                )).then((onValue){
+                  setState(() {
+                    
+                  });
+                });
               },
             ),
           )

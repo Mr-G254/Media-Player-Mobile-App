@@ -136,13 +136,13 @@ class _NowPlayingState extends State<NowPlaying>{
                 ),
                 onTap: (){
                   if(isFavourite){
-                    App.deleteFavourite(widget.song);
+                    App.deleteFavourite(current);
 
                     setState(() {
                       isFavourite = false;
                     });
                   }else{
-                    App.addFavourite(widget.song);
+                    App.addFavourite(current);
 
                     setState(() {
                       isFavourite = true;

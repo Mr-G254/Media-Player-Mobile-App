@@ -89,12 +89,12 @@ abstract class AppDatabase{
 
   static Future<void> addFavouriteSong(String path)async{
     await db.insert('Favourite', {'path' : path});
-    await getFavouriteSongs();
+    // await getFavouriteSongs();
   }
 
   static Future<void> deleteFavouriteSong(String path)async{
     await db.delete('Favourite',where: 'path = ?',whereArgs: [path]);
-    await getFavouriteSongs();
+    // await getFavouriteSongs();
   }
 
   static Future<void> createPlaylist(String playlistName)async{
@@ -115,7 +115,7 @@ abstract class AppDatabase{
 
   static Future<void> deletePlaylist(String playlistName)async{
     await db.execute("DROP TABLE IF EXISTS '$playlistName'");
-    await getPlaylists();
+    // await getPlaylists();
   }
 
 

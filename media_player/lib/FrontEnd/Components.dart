@@ -125,6 +125,14 @@ class PlaylistTile extends StatefulWidget {
 }
 
 class _PlaylistTileState extends State<PlaylistTile>{
+  late Playlist currentPlaylist;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    currentPlaylist = widget.playlist;
+  }
 
   @override
   Widget build(BuildContext context){
@@ -147,7 +155,7 @@ class _PlaylistTileState extends State<PlaylistTile>{
                 alignment: Alignment.topRight,
                 padding: const EdgeInsets.only(top: 5,right: 7),
                 child: Text(
-                  '${widget.playlist.songs.length} songs',
+                  '${currentPlaylist.songs.length} songs',
                   style: const TextStyle(
                     fontFamily: "Orelega",
                     fontSize: 15,
@@ -159,7 +167,7 @@ class _PlaylistTileState extends State<PlaylistTile>{
                 alignment: Alignment.bottomLeft,
                 padding: const EdgeInsets.only(bottom: 5,left: 8),
                 child: Text(
-                  widget.playlist.name.split('_')[0],
+                  currentPlaylist.name.split('_')[0],
                   style: const TextStyle(
                     fontFamily: "Orelega",
                     fontSize: 17,
@@ -172,11 +180,13 @@ class _PlaylistTileState extends State<PlaylistTile>{
         ),
       ),
       onTap: ()async{
-        await Navigator.push(context, MaterialPageRoute(builder: (context) => PlaylistSongs(playlist: widget.playlist))).then((val){
-          setState(() {
+        var play = await Navigator.push(context, MaterialPageRoute(builder: (context) => PlaylistSongs(playlist: widget.playlist)));
 
+        if(play != null){
+          setState(() {
+            currentPlaylist = play;
           });
-        });
+        }
       },
     );
   }
@@ -338,7 +348,18 @@ class AskDelete extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(15),
               child: Text(
-                "Are you sure you want to delete $itemToDelete",
+                itemToDelete,
+                style: const TextStyle(
+                  fontFamily: "Orelega",
+                  fontSize: 20,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.only(right: 15,left: 15),
+              child: const Text(
+                "Are you sure you want to delete this playlist?",
                 style: const TextStyle(
                   fontFamily: "Orelega",
                   fontSize: 20,

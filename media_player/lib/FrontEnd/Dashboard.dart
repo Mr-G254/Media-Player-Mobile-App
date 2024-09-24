@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:media_player/BackEnd/Playlist.dart';
 import 'package:media_player/FrontEnd/Components.dart';
+import 'package:media_player/FrontEnd/Dashboard/FavouriteView.dart';
+import 'package:media_player/FrontEnd/Dashboard/RecentView.dart';
 import 'package:media_player/FrontEnd/PlaylistSongs.dart';
 
 import '../BackEnd/App.dart';
+import 'Dashboard/PlaylistView.dart';
 
 class Dashboard extends StatefulWidget{
   const Dashboard({super.key});
@@ -26,6 +29,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
         currentIndex = controller.index;
       });
     });
+
   }
 
   @override
@@ -120,38 +124,6 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
       ),
     );
 
-    final rec = ValueListenableBuilder(
-        valueListenable: App.recentDisplay,
-        builder: (context,value,child){
-          return ListView(
-              padding: EdgeInsets.zero,
-              shrinkWrap: true,
-              children: value
-          );
-        }
-    );
-
-    final fav = ValueListenableBuilder(
-      valueListenable: App.favouriteDisplay,
-      builder: (context,value,child){
-        return ListView(
-            padding: EdgeInsets.zero,
-            shrinkWrap: true,
-            children: value
-        );
-      }
-    );
-
-    final play = ValueListenableBuilder(
-      valueListenable: App.playlistDisplay,
-      builder: (context,value,child){
-        return GridView.extent(
-          maxCrossAxisExtent: MediaQuery.of(context).size.width/2,
-          children: value
-        );
-      }
-    );
-
     final window = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -234,10 +206,10 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
         Expanded(
           child: TabBarView(
             controller: controller,
-            children: [
-              rec,
-              play,
-              fav
+            children: const [
+              RecentView(),
+              PlaylistView(),
+              FavouriteView()
             ],
           )
         ),

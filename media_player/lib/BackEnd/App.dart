@@ -15,6 +15,7 @@ abstract class App{
   static List<SongModel> currentSongList = [];
 
   static List<String> allVideos = [];
+  static List<Playlist> allPlaylist = [];
 
   static List<Widget> songDisplay= [];
   static ValueNotifier<List<Widget>> recentDisplay= ValueNotifier([]);
@@ -129,17 +130,16 @@ abstract class App{
 
   static Future<void> createPlaylist(String playlistName)async{
     await AppDatabase.createPlaylist(playlistName);
-    playlistDisplay.value.add(PlaylistTile(playlist: Playlist(name: '${playlistName}_playlist')));
+
+    allPlaylist.add(Playlist(name: '${playlistName}_playlist'));
+    refreshPlaylistDisplay();
   }
 
   static Future<void> deletePlaylist(Playlist playlist)async{
     await AppDatabase.deletePlaylist(playlist.name);
-    playlistDisplay.value.clear();
 
-    for(final i in AppDatabase.playlists){
-      playlistDisplay.value.add(PlaylistTile(playlist: i));
-    }
-
+    allPlaylist.remove(playlist);
+    refreshPlaylistDisplay();
   }
 
   static Future<void> addSongsToPlaylist(String playlistName,List<SongModel> songs)async{
@@ -151,24 +151,20 @@ abstract class App{
   }
 
   static Future<void> addFavourite(SongModel song)async{
-    await AppDatabase.addFavouriteSong(song.data);
-    favouriteSongs.clear();
-    favouriteDisplay.value.clear();
+    if(!(favouriteSongs.contains(song))){
+      await AppDatabase.addFavouriteSong(song.data);
 
-    for(final i in allSongs){
-      if(AppDatabase.favouriteSongs.contains(i.data)){
-        favouriteSongs.add(i);
-        favouriteDisplay.value.add(SongTile(song: i, list: "favourite"));
-      }
+      favouriteSongs.add(song);
+      refreshFavouriteDisplay();
     }
+
   }
 
   static void deleteFavourite(SongModel song){
     AppDatabase.deleteFavouriteSong(song.data);
 
-    final index = favouriteSongs.indexOf(song);
-    favouriteDisplay.value.removeAt(index);
     favouriteSongs.remove(song);
+    refreshFavouriteDisplay();
   }
 
   static void addRecent(SongModel song){
@@ -193,6 +189,27 @@ abstract class App{
 
     rec.add(SizedBox(height: minDisplayHeight));
     recentDisplay.value = rec;
+  }
+
+  static void refreshPlaylistDisplay(){
+    List<PlaylistTile> play = [];
+
+    for(final i in allPlaylist){
+      play.add(PlaylistTile(playlist: i));
+    }
+
+    playlistDisplay.value = play;
+  }
+
+  static void refreshFavouriteDisplay(){
+    List<Widget> fav = [];
+
+    for(final i in favouriteSongs){
+      fav.add(SongTile(song: i, list: 'favourite',));
+    }
+
+    fav.add(SizedBox(height: minDisplayHeight));
+    favouriteDisplay.value = fav;
   }
 
   static void close()async{
