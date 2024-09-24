@@ -19,7 +19,7 @@ abstract class App{
   static List<Widget> songDisplay= [];
   static ValueNotifier<List<Widget>> recentDisplay= ValueNotifier([]);
   static ValueNotifier<List<Widget>> favouriteDisplay= ValueNotifier([]);
-  static ValueNotifier<List<Widget>> playlistDisplay= ValueNotifier([]);
+  static ValueNotifier<List<PlaylistTile>> playlistDisplay= ValueNotifier([]);
 
   static String currentList = "all";
 
@@ -130,6 +130,16 @@ abstract class App{
   static Future<void> createPlaylist(String playlistName)async{
     await AppDatabase.createPlaylist(playlistName);
     playlistDisplay.value.add(PlaylistTile(playlist: Playlist(name: '${playlistName}_playlist')));
+  }
+
+  static Future<void> deletePlaylist(Playlist playlist)async{
+    await AppDatabase.deletePlaylist(playlist.name);
+    playlistDisplay.value.clear();
+
+    for(final i in AppDatabase.playlists){
+      playlistDisplay.value.add(PlaylistTile(playlist: i));
+    }
+
   }
 
   static Future<void> addSongsToPlaylist(String playlistName,List<SongModel> songs)async{

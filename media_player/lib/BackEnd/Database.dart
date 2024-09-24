@@ -114,8 +114,7 @@ abstract class AppDatabase{
   }
 
   static Future<void> deletePlaylist(String playlistName)async{
-    db.execute("DROP TABLE IF EXISTS '$playlistName'");
-
+    await db.execute("DROP TABLE IF EXISTS '$playlistName'");
     await getPlaylists();
   }
 

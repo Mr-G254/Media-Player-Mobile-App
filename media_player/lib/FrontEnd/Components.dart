@@ -321,6 +321,87 @@ class _NewPlaylistDialogState extends State<NewPlaylistDialog>{
   }
 }
 
+class AskDelete extends StatelessWidget {
+  final String itemToDelete;
+  const AskDelete({super.key,required this.itemToDelete});
+
+  @override
+  Widget build(BuildContext context){
+    return Container(
+      padding: const EdgeInsets.all(15),
+      child: Dialog(
+        backgroundColor: const Color(0xff781F15),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(15),
+              child: Text(
+                "Are you sure you want to delete $itemToDelete",
+                style: const TextStyle(
+                  fontFamily: "Orelega",
+                  fontSize: 20,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+
+            Row(
+              children: [
+                Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xff510723),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))
+                        ),
+                        onPressed: (){
+                          Navigator.pop(context,true);
+                        },
+                        child: const Text(
+                          'yes',
+                          style: TextStyle(
+                            fontFamily: "Orelega",
+                            fontSize: 18,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    )
+                ),
+                Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xff510723),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))
+                        ),
+                        onPressed: (){
+                          Navigator.pop(context,false);
+                        },
+                        child: const Text(
+                          'no',
+                          style: TextStyle(
+                            fontFamily: "Orelega",
+                            fontSize: 18,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    )
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class SelectableTile extends StatefulWidget{
   final SongModel song;
   final Function callback;
@@ -331,7 +412,7 @@ class SelectableTile extends StatefulWidget{
 }
 
 class _SelectableTileState extends State<SelectableTile>{
-  bool isSelected = false;
+  bool _isSelected = false;
 
   @override
   Widget build(BuildContext context){
@@ -367,10 +448,10 @@ class _SelectableTileState extends State<SelectableTile>{
                   activeColor: Color(0xff510723),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                   side: const BorderSide(color: Colors.white,width: 2),
-                  value: isSelected,
+                  value: _isSelected,
                   onChanged: (val){
                     setState(() {
-                      isSelected = val!;
+                      _isSelected = val!;
                     });
 
                     widget.callback(widget.song);
@@ -449,11 +530,11 @@ class _SelectSongsState extends State<SelectSongs>{
               ),
             ),
             Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                shrinkWrap: true,
-                children: listedSongs,
-              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: listedSongs,
+                ),
+              )
             ),
             Row(
               children: [

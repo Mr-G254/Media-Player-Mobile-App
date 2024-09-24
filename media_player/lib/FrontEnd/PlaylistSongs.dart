@@ -39,7 +39,7 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
   }
 
   void addSongs()async{
-    await App.addSongsToPlaylist(widget.playlist.name, songs).then((val){
+    await App.addSongsToPlaylist(widget.playlist.name, selectedSongs).then((val){
       for(final i in selectedSongs){
         widget.playlist.songs.add(i.data);
         songWidget.add(SongTile(song: i, list: 'playlist'));
@@ -48,6 +48,11 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PlaylistSongs(playlist: widget.playlist)));
 
     });
+  }
+
+  void deletePlaylist(){
+    App.deletePlaylist(widget.playlist);
+    Navigator.pop(context);
   }
 
   @override
@@ -70,7 +75,7 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
         Container(
           width: double.infinity,
           alignment: Alignment.center,
-          padding: EdgeInsets.all(5),
+          padding: const EdgeInsets.all(5),
           child: Text(
             widget.playlist.name.split('_')[0],
             style: const TextStyle(
@@ -95,7 +100,13 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
                     height: 23,
                     width: 23,
                   ),
-                  onTap: (){},
+                  onTap: ()async{
+                    var ans = await Navigator.push(context, DialogRoute(context: context, builder: (context) => AskDelete(itemToDelete: "'${widget.playlist.name.split('_')[0]}' playlist",)));
+
+                    if(ans){
+                      deletePlaylist();
+                    }
+                  },
                 ),
               ),
               const SizedBox(width: 20,),
