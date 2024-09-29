@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:media_player/BackEnd/Database.dart';
@@ -13,6 +15,7 @@ abstract class App{
   static List<SongModel> recentSongs = [];
   static List<SongModel> favouriteSongs = [];
   static List<SongModel> currentSongList = [];
+  static List<SongModel> shuffledSongList = [];
 
   static List<String> allVideos = [];
   static List<Playlist> allPlaylist = [];
@@ -30,6 +33,9 @@ abstract class App{
   static double songPosition = 0.0;
 
   static double minDisplayHeight = 0;
+
+  static int loop = 0;
+  static bool shuffle= false;
 
   static Future<void> initialize()async{
     await AppDatabase.initialize();
@@ -64,6 +70,7 @@ abstract class App{
       currentSong = ValueNotifier<SongModel>(recentSongs[0]);
     }else{
       currentSong = ValueNotifier<SongModel>(allSongs[0]);
+      addRecent(allSongs[0]);
     }
 
     currentSongList = allSongs;
@@ -97,31 +104,66 @@ abstract class App{
 
   }
 
-  static SongModel nextSong(){
-    var index = currentSongList.indexOf(currentSong.value);
+  static void nextSong(){
 
-    if(index == currentSongList.length - 1){
-      index = 0;
+    if(shuffle){
+      if(shuffledSongList.length == allSongs.length){
+        if(loop == 1){
+          shuffledSongList.clear();
+          nextSong();
+        }else if(loop == 0){
+          musicIsPlaying = false;
+        }
+      }else{
+        var index = Random().nextInt(allSongs.length);
+
+        while(shuffledSongList.contains(allSongs[index])){
+          index = Random().nextInt(allSongs.length);
+        }
+
+        shuffledSongList.add(allSongs[index]);
+        playSong(allSongs[index]);
+      }
+
     }else{
-      ++index;
+      var index = currentSongList.indexOf(currentSong.value);
+
+      if(index == currentSongList.length - 1){
+        index = 0;
+      }else{
+        ++index;
+      }
+
+      playSong(currentSongList[index]);
     }
-
-    playSong(currentSongList[index]);
-    return currentSongList[index];
-
   }
 
-  static SongModel previousSong(){
-    var index = currentSongList.indexOf(currentSong.value);
+  static void previousSong(){
+    if(shuffle){
+      if(shuffledSongList.contains(currentSong.value)){
+        var index = shuffledSongList.indexOf(currentSong.value);
 
-    if(index == 0){
-      index = currentSongList.length - 1;
+        if(index == 0){
+          nextSong();
+        }else{
+          playSong(shuffledSongList[index - 1]);
+        }
+
+      }else{
+        nextSong();
+      }
     }else{
-      --index;
+      var index = currentSongList.indexOf(currentSong.value);
+
+      if(index == 0){
+        index = currentSongList.length - 1;
+      }else{
+        --index;
+      }
+
+      playSong(currentSongList[index]);
     }
 
-    playSong(currentSongList[index]);
-    return currentSongList[index];
   }
 
   static void seekSong(Duration dur){

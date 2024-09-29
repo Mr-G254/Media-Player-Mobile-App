@@ -76,6 +76,8 @@ flutter:
     - icons/menu.png
     - icons/heart.png
     - icons/loop.png
+    - icons/loop off.png
+    - icons/loop once.png
     - icons/shuffle.png
     - icons/previous.png
     - icons/play.png
@@ -89,6 +91,7 @@ flutter:
     - icons/heart2.png
     - icons/bin.png
     - icons/plus.png
+    - icons/shuffle off.png
 
   fonts:
     - family: Orelega

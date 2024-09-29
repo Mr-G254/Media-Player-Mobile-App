@@ -17,24 +17,17 @@ class NowPlaying extends StatefulWidget{
 class _NowPlayingState extends State<NowPlaying>{
   Duration currentPosition = Duration(seconds: 0);
   late StreamSubscription<Duration> progressEvent;
-  late StreamSubscription<void> onEndEvent;
-  late SongModel current = widget.song;
   late bool isFavourite;
   
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    App.currentSong.value = widget.song;
     isFavourite = App.favouriteSongs.contains(widget.song);
-    progressEvent = App.player.onPositionChanged.listen((dur){
+    progressEvent = App.player.onPositionChanged.listen((dur) {
       setState(() {
         currentPosition = dur;
-      });
-    });
-
-    onEndEvent = App.player.onPlayerComplete.listen((dur){
-      setState(() {
-        current = App.nextSong();
       });
     });
   }
@@ -44,7 +37,6 @@ class _NowPlayingState extends State<NowPlaying>{
     // TODO: implement dispose
     super.dispose();
     progressEvent.cancel();
-    onEndEvent.cancel();
   }
 
   @override
@@ -93,7 +85,7 @@ class _NowPlayingState extends State<NowPlaying>{
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                current.title,
+                App.currentSong.value.title,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontFamily: "Orelega",
@@ -102,7 +94,7 @@ class _NowPlayingState extends State<NowPlaying>{
                 ),
               ),
               Text(
-                current.artist == "<unknown>" ? "unknown" : current.artist!,
+                App.currentSong.value.artist == "<unknown>" ? "unknown" : App.currentSong.value.artist!,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontFamily: "Orelega",
@@ -120,29 +112,38 @@ class _NowPlayingState extends State<NowPlaying>{
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               GestureDetector(
-                child: const Image(
-                  image: AssetImage("icons/shuffle.png"),
+                child: Image(
+                  image: AssetImage(App.shuffle ? "icons/shuffle.png" : "icons/shuffle off.png"),
                   color: Colors.white,
-                  height: 30,
-                  width: 30,
+                  height: 28,
+                  width: 28,
                 ),
+                onTap: (){
+                  setState(() {
+                    App.shuffle = !App.shuffle;
+                  });
+
+                  if(!(App.shuffledSongList.contains(App.currentSong.value))){
+                    App.shuffledSongList.add(App.currentSong.value);
+                  }
+                },
               ),
               GestureDetector(
                 child: Image(
                   image: AssetImage(isFavourite ? "icons/heart2.png" : "icons/heart.png"),
                   color: Colors.white,
-                  height: 30,
-                  width: 30,
+                  height: 28,
+                  width: 28,
                 ),
                 onTap: (){
                   if(isFavourite){
-                    App.deleteFavourite(current);
+                    App.deleteFavourite(App.currentSong.value);
 
                     setState(() {
                       isFavourite = false;
                     });
                   }else{
-                    App.addFavourite(current);
+                    App.addFavourite(App.currentSong.value);
 
                     setState(() {
                       isFavourite = true;
@@ -151,22 +152,37 @@ class _NowPlayingState extends State<NowPlaying>{
                 },
               ),
               GestureDetector(
-                child: const Image(
-                  image: AssetImage("icons/loop.png"),
+                child: Image(
+                  image: AssetImage(App.loop== 0 ? "icons/loop off.png" : App.loop== 1 ? "icons/loop.png" : "icons/loop once.png"),
                   color: Colors.white,
-                  height: 30,
-                  width: 30,
+                  height: 28,
+                  width: 28,
                 ),
-              )
+                onTap: (){
+                  if(App.loop == 0){
+                    setState(() {
+                      App.loop = 1;
+                    });
+                  }else if(App.loop == 1){
+                    setState(() {
+                      App.loop = 2;
+                    });
+                  }else if(App.loop == 2){
+                    setState(() {
+                      App.loop = 0;
+                    });
+                  }
+                },
+              ),
             ],
           ),
         ),
         Container(
+            width: double.infinity,
           padding: const EdgeInsets.only(right: 25,left: 25,top: 15,bottom: 15),
-          width: double.infinity,
           child: ProgressBar(
             progress: currentPosition,
-            total: Duration(milliseconds: current.duration!),
+            total: Duration(milliseconds: App.currentSong.value.duration!),
             onSeek: (position) => App.seekSong(position),
             baseBarColor: Colors.white,
             progressBarColor: const Color(0xff510723),
@@ -195,8 +211,8 @@ class _NowPlayingState extends State<NowPlaying>{
                 ),
                 onTap: (){
                   setState(() {
-                    current = App.previousSong();
-                    isFavourite = App.favouriteSongs.contains(current);
+                    App.previousSong();
+                    isFavourite = App.favouriteSongs.contains(App.currentSong.value);
                   });
                 },
               ),
@@ -219,8 +235,8 @@ class _NowPlayingState extends State<NowPlaying>{
                 ),
                 onTap: (){
                   setState(() {
-                    current = App.nextSong();
-                    isFavourite = App.favouriteSongs.contains(current);
+                    App.nextSong();
+                    isFavourite = App.favouriteSongs.contains(App.currentSong.value);
                   });
                 },
               ),

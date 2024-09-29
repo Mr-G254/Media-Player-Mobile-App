@@ -43,9 +43,27 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     });
 
     onEndEvent = App.player.onPlayerComplete.listen((dur){
-      setState(() {
-        App.nextSong();
-      });
+      if(App.loop == 2){
+        setState(() {
+          App.playSong(App.currentSong.value);
+        });
+      }else if(App.loop == 0 && App.currentSongList.indexOf(App.currentSong.value) == (App.currentSongList.length - 1)){
+        if(App.shuffle){
+          setState(() {
+            App.nextSong();
+          });
+        }else{
+          setState(() {
+            App.musicIsPlaying = false;
+          });
+        }
+
+        //do nothing
+      }else{
+        setState(() {
+          App.nextSong();
+        });
+      }
     });
 
   }
@@ -56,6 +74,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     progressEvent.cancel();
     onEndEvent.cancel();
     listener.dispose();
+    App.player.dispose();
+
     // TODO: implement dispose
     super.dispose();
 
