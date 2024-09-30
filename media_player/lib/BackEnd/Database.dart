@@ -102,7 +102,16 @@ abstract class AppDatabase{
   }
 
   static Future<void> addPlaylistSongs(String playlistName,List<SongModel> songs)async{
-    for(final i in songs){
+    var added = songs;
+    var list = await getPlaylistSongs(playlistName);
+
+    for(final i in added){
+      if(list.contains(i.data)){
+        added.remove(i);
+      }
+    }
+
+    for(final i in added){
       await db.insert('[$playlistName]', {'path' : i.data});
     }
 

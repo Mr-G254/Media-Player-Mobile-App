@@ -29,7 +29,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     listener = AppLifecycleListener(onStateChange: (val){
       App.close();
     });
-    controller = TabController(length: 4, vsync: this,initialIndex: currentIndex);
+    controller = TabController(length: 4, vsync: this,initialIndex: currentIndex,animationDuration: Duration(milliseconds: 500));
     controller.addListener((){
       setState(() {
         currentIndex = controller.index;

@@ -80,6 +80,9 @@ class SongTile extends StatelessWidget {
                         height: 30,
                       )
                   ),
+                  onTap: (){
+                    Navigator.push(context,DialogRoute(context: context, builder: (context) => SongOptions(song: song, list: list,)));
+                  },
                 )
               ],
             ),
@@ -604,6 +607,106 @@ class _SelectSongsState extends State<SelectSongs>{
                     )
                 ),
               ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class SongOptions extends StatelessWidget{
+  final SongModel song;
+  final String list;
+  const SongOptions({super.key,required this.song,required this.list});
+  
+  Widget build(BuildContext context){
+    return Container(
+      padding: EdgeInsets.all(0),
+      child: Dialog(
+        backgroundColor: const Color(0xff781F15),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              width: MediaQuery.of(context).size.width*(2/3),
+              child: Text(
+                song.title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontFamily: "Orelega",
+                  fontSize: 20,
+                  color: Colors.white,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+            Visibility(
+              visible: list == 'all',
+              child: ListTile(
+                tileColor: Colors.transparent,
+                title: Container(
+                  padding: const EdgeInsets.only(top: 15,bottom: 5),
+                  child: const Text(
+                    'Add to playlist',
+                    style: TextStyle(
+                      fontFamily: "Orelega",
+                      fontSize: 18,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            ListTile(
+              tileColor: Colors.transparent,
+              title: Container(
+                padding: const EdgeInsets.only(top: 15,bottom: 5),
+                child: const Text(
+                  'Share',
+                  style: TextStyle(
+                    fontFamily: "Orelega",
+                    fontSize: 18,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            Visibility(
+              visible: list == 'playlist',
+              child: ListTile(
+                tileColor: Colors.transparent,
+                title: Container(
+                  padding: const EdgeInsets.only(top: 15,bottom: 5),
+                  child: const Text(
+                    'Remove',
+                    style: TextStyle(
+                      fontFamily: "Orelega",
+                      fontSize: 18,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Visibility(
+              visible: list == 'all',
+              child: ListTile(
+                tileColor: Colors.transparent,
+                title: Container(
+                  padding: const EdgeInsets.only(top: 15,bottom: 5),
+                  child: const Text(
+                    'Delete',
+                    style: TextStyle(
+                      fontFamily: "Orelega",
+                      fontSize: 18,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
             )
           ],
         ),

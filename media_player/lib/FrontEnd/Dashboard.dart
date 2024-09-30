@@ -23,7 +23,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
   void initState() {
     // TODO: implement initState
     super.initState();
-    controller = TabController(length: 3, vsync: this,initialIndex: currentIndex);
+    controller = TabController(length: 3, vsync: this,initialIndex: currentIndex,animationDuration: Duration(milliseconds: 100));
     controller.addListener((){
       setState(() {
         currentIndex = controller.index;
