@@ -673,6 +673,9 @@ class SongOptions extends StatelessWidget{
                   ),
                 ),
               ),
+              onTap: (){
+                App.shareSong(song);
+              },
             ),
             Visibility(
               visible: list == 'playlist',
@@ -706,6 +709,14 @@ class SongOptions extends StatelessWidget{
                     ),
                   ),
                 ),
+                onTap: ()async{
+                  Navigator.pop(context);
+                  var response = await Navigator.push(context, DialogRoute(context: context, builder: (context) => AskDelete(itemToDelete: song.title)));
+
+                  if(response){
+                    App.deleteSong(song);
+                  }
+                },
               ),
             )
           ],

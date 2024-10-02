@@ -1,5 +1,5 @@
+import 'dart:io';
 import 'dart:math';
-
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:media_player/BackEnd/Database.dart';
@@ -20,7 +20,7 @@ abstract class App{
   static List<String> allVideos = [];
   static List<Playlist> allPlaylist = [];
 
-  static List<Widget> songDisplay= [];
+  static ValueNotifier<List<Widget>> songDisplay= ValueNotifier([]);
   static ValueNotifier<List<Widget>> recentDisplay= ValueNotifier([]);
   static ValueNotifier<List<Widget>> favouriteDisplay= ValueNotifier([]);
   static ValueNotifier<List<PlaylistTile>> playlistDisplay= ValueNotifier([]);
@@ -44,7 +44,7 @@ abstract class App{
 
     allSongs.forEach((val){
       if(val.isMusic == true){
-        songDisplay.add(SongTile(song: val, list: 'all',),);
+        songDisplay.value.add(SongTile(song: val, list: 'all',),);
         
         if(AppDatabase.recentSongs.contains(val.data)){
           recentSongs.add(val);
@@ -59,7 +59,7 @@ abstract class App{
 
     });
 
-    songDisplay.add(SizedBox(height: minDisplayHeight));
+    songDisplay.value.add(SizedBox(height: minDisplayHeight));
     recentDisplay.value.add(SizedBox(height: minDisplayHeight));
 
     for(final i in AppDatabase.playlists){
@@ -222,6 +222,17 @@ abstract class App{
     refreshRecentDisplay();
   }
 
+  static void refreshSongDisplay(){
+    List<Widget> song = [];
+
+    for(final i in recentSongs){
+      song.add(SongTile(song: i, list: 'recent',));
+    }
+
+    song.add(SizedBox(height: minDisplayHeight));
+    songDisplay.value = song;
+  }
+
   static void refreshRecentDisplay(){
     List<Widget> rec = [];
 
@@ -252,6 +263,29 @@ abstract class App{
 
     fav.add(SizedBox(height: minDisplayHeight));
     favouriteDisplay.value = fav;
+  }
+
+  static void deleteSong(SongModel song)async{
+    await File(song.data).delete();
+
+    if(allSongs.contains(song)){
+      allSongs.remove(song);
+      refreshSongDisplay();
+    }
+
+    if(recentSongs.contains(song)){
+      recentSongs.remove(song);
+      refreshRecentDisplay();
+    }
+
+    if(favouriteSongs.contains(song)){
+      favouriteSongs.remove(song);
+      refreshFavouriteDisplay();
+    }
+
+  }
+
+  static void shareSong(SongModel song)async{
   }
 
   static void close()async{

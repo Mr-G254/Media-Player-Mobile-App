@@ -60,12 +60,16 @@ class _MusicState extends State<Music>{
           ),
         ),
         Expanded(
-          // padding: EdgeInsets.all(10),
-          child: ListView(
-            padding: EdgeInsets.zero,
-            shrinkWrap: true,
-            children: App.songDisplay
-          ),
+          child: ValueListenableBuilder(
+            valueListenable: App.songDisplay,
+            builder: (context,value,child){
+              return ListView(
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  children: value
+              );
+            }
+          )
         ),
       ],
     );
