@@ -1,11 +1,16 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:appinio_social_share/appinio_social_share.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:media_player/BackEnd/Database.dart';
 import 'package:media_player/BackEnd/Playlist.dart';
 import 'package:media_player/FrontEnd/Components.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 abstract class App{
   static OnAudioQuery _audioQuery = OnAudioQuery();
@@ -266,29 +271,63 @@ abstract class App{
   }
 
   static void deleteSong(SongModel song)async{
-    await File(song.data).delete();
+    await App.close();
+    final plugin = DeviceInfoPlugin();
+    final android = await plugin.androidInfo;
 
-    if(allSongs.contains(song)){
-      allSongs.remove(song);
-      refreshSongDisplay();
+    if(android.version.sdkInt < 30){
+      var perm = await Permission.storage.status;
+      if(!perm.isGranted){
+        await Permission.storage.request();
+      }
+    }else{
+      var perm = await Permission.manageExternalStorage.status;
+      if(!perm.isGranted){
+        await Permission.manageExternalStorage.request();
+      }
     }
 
-    if(recentSongs.contains(song)){
-      recentSongs.remove(song);
-      refreshRecentDisplay();
-    }
 
-    if(favouriteSongs.contains(song)){
-      favouriteSongs.remove(song);
-      refreshFavouriteDisplay();
-    }
+    var path = join(getExternalStorageDirectory().toString(),song.data);
+    print(path);
+    await File(path).delete();
+
+    allSongs = await _audioQuery.querySongs();
+
+    recentSongs.clear();
+    favouriteSongs.clear();
+    songDisplay.value = [];
+    recentDisplay.value = [];
+    favouriteDisplay.value = [];
+
+    allSongs.forEach((val){
+      if(val.isMusic == true){
+        songDisplay.value.add(SongTile(song: val, list: 'all',),);
+
+        if(AppDatabase.recentSongs.contains(val.data)){
+          recentSongs.add(val);
+          recentDisplay.value.add(SongTile(song: val, list: 'recent',));
+        }
+
+        if(AppDatabase.favouriteSongs.contains(val.data)){
+          favouriteSongs.add(val);
+          favouriteDisplay.value.add(SongTile(song: val, list: 'favourite',));
+        }
+      }
+
+    });
+
+    songDisplay.value.add(SizedBox(height: minDisplayHeight));
+    recentDisplay.value.add(SizedBox(height: minDisplayHeight));
 
   }
 
-  static void shareSong(SongModel song)async{
+  static Future<void> shareSong(SongModel song)async{
+    await AppinioSocialShare().android.shareFilesToSystem(song.title, [song.data]);
+    // await Share.shareXFiles([XFile(song.data)],text: song.title);
   }
 
-  static void close()async{
+  static Future<void> close()async{
     await AppDatabase.editRecentSongs(recentSongs);
 
   }

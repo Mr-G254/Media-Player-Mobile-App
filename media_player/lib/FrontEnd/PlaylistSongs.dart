@@ -112,7 +112,7 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
                     width: 23,
                   ),
                   onTap: ()async{
-                    var ans = await Navigator.push(context, DialogRoute(context: context, builder: (context) => AskDelete(itemToDelete: "'${widget.playlist.name.split('_')[0]}' playlist",)));
+                    var ans = await Navigator.push(context, DialogRoute(context: context, builder: (context) => AskDelete(itemToDelete: "'${widget.playlist.name.split('_')[0]}' playlist",isSong: false,)));
 
                     if(ans){
                       deletePlaylist();

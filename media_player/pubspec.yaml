@@ -39,6 +39,11 @@ dependencies:
   audio_video_progress_bar: ^2.0.3
   audioplayers: ^6.1.0
   sqflite: ^2.3.3+1
+  path_provider: ^2.1.4
+  path: ^1.9.0
+  permission_handler: ^11.3.1
+  device_info_plus: ^10.1.2
+  appinio_social_share: ^0.3.2
 
 dev_dependencies:
   flutter_test:

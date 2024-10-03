@@ -336,7 +336,8 @@ class _NewPlaylistDialogState extends State<NewPlaylistDialog>{
 
 class AskDelete extends StatelessWidget {
   final String itemToDelete;
-  const AskDelete({super.key,required this.itemToDelete});
+  final bool isSong;
+  const AskDelete({super.key,required this.itemToDelete,required this.isSong});
 
   @override
   Widget build(BuildContext context){
@@ -355,14 +356,15 @@ class AskDelete extends StatelessWidget {
                 style: const TextStyle(
                   fontFamily: "Orelega",
                   fontSize: 20,
-                  color: Colors.white,
+                  color: Color(0xffE1246B),
+                  overflow: TextOverflow.ellipsis
                 ),
               ),
             ),
             Container(
               padding: const EdgeInsets.only(right: 15,left: 15),
-              child: const Text(
-                "Are you sure you want to delete this playlist?",
+              child: Text(
+                "Are you sure you want to delete this ${isSong ? 'song': 'playlist'}?",
                 style: const TextStyle(
                   fontFamily: "Orelega",
                   fontSize: 20,
@@ -638,7 +640,7 @@ class SongOptions extends StatelessWidget{
                 style: const TextStyle(
                   fontFamily: "Orelega",
                   fontSize: 20,
-                  color: Colors.white,
+                  color: Color(0xffE1246B),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -673,8 +675,10 @@ class SongOptions extends StatelessWidget{
                   ),
                 ),
               ),
-              onTap: (){
-                App.shareSong(song);
+              onTap: ()async{
+                await App.shareSong(song).then((onValue){
+                  Navigator.pop(context);
+                });
               },
             ),
             Visibility(
@@ -711,7 +715,7 @@ class SongOptions extends StatelessWidget{
                 ),
                 onTap: ()async{
                   Navigator.pop(context);
-                  var response = await Navigator.push(context, DialogRoute(context: context, builder: (context) => AskDelete(itemToDelete: song.title)));
+                  var response = await Navigator.push(context, DialogRoute(context: context, builder: (context) => AskDelete(itemToDelete: song.title,isSong: true,)));
 
                   if(response){
                     App.deleteSong(song);
