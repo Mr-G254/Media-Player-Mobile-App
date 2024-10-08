@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:media_player/BackEnd/Database.dart';
 import 'package:media_player/BackEnd/Playlist.dart';
 import 'package:media_player/FrontEnd/NowPlaying.dart';
 import 'package:media_player/FrontEnd/PlaylistSongs.dart';
@@ -9,8 +10,9 @@ import '../BackEnd/App.dart';
 class SongTile extends StatelessWidget {
   final SongModel song;
   final String list;
+  final String? playlistName;
   final Function(SongModel)? removeSong;
-  const SongTile({super.key, required this.song, required this.list,this.removeSong});
+  const SongTile({super.key, required this.song, required this.list,this.removeSong,this.playlistName});
 
   @override
   Widget build(BuildContext context){
@@ -88,11 +90,22 @@ class SongTile extends StatelessWidget {
               ],
             ),
           ),
-          onTap: (){
+          onTap: ()async{
             if(!(App.currentSong == song)){
               App.playSong(song);
             }
             App.currentList = list;
+
+            if(playlistName != null){
+              var songList = await AppDatabase.getPlaylistSongs(playlistName!);
+              App.currentPlaylistSongs.clear();
+
+              for(final i in App.allSongs){
+                if(songList.contains(i.data)){
+                  App.currentPlaylistSongs.add(i);
+                }
+              }
+            }
 
             if(list == "recent"){
               App.currentSongList = App.recentSongs;
@@ -185,7 +198,7 @@ class _PlaylistTileState extends State<PlaylistTile>{
         ),
       ),
       onTap: ()async{
-        var play = await Navigator.push(context, MaterialPageRoute(builder: (context) => PlaylistSongs(playlist: widget.playlist)));
+        var play = await Navigator.push(context, MaterialPageRoute(builder: (context) => PlaylistSongs(playlist: currentPlaylist)));
 
         if(play != null){
           setState(() {

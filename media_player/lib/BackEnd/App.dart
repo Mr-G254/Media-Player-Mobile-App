@@ -187,7 +187,6 @@ abstract class App{
     list.add(PlaylistTile(playlist: Playlist(name: '${playlistName}_playlist')));
 
     playlistDisplay.value = list;
-    // await refreshPlaylistDisplay();
   }
 
   static Future<void> deletePlaylist(Playlist playlist)async{

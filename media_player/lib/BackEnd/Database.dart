@@ -105,11 +105,7 @@ abstract class AppDatabase{
     var added = songs;
     var list = await getPlaylistSongs(playlistName);
 
-    for(final i in added){
-      if(list.contains(i.data)){
-        added.remove(i);
-      }
-    }
+    added.removeWhere((song) => list.contains(song.data));
 
     for(final i in added){
       await db.insert('[$playlistName]', {'path' : i.data});

@@ -15,14 +15,16 @@ class PlaylistSongs extends StatefulWidget{
 }
 
 class _PlaylistSongsState extends State<PlaylistSongs>{
+  late Playlist currentPlaylist;
   List<SongModel> songs = [];
-  ValueNotifier<List<Widget>> songWidget = ValueNotifier([]);
+  List<Widget> songWidget = [];
   List<SongModel> selectedSongs = [];
+  bool isPlaying = false;
   bool loading = false;
 
   void removeSong(SongModel song)async{
     await App.removeSongFromPlaylist(widget.playlist.name, song);
-    widget.playlist.songs.remove(song.data);
+    currentPlaylist.songs.remove(song.data);
     songs.remove(song);
 
     if(context.mounted){
@@ -33,13 +35,15 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
   }
 
   void refresh(){
-    List<Widget> widgets = [];
-
+    songWidget.clear();
     for(final i in songs){
-      widgets.add(SongTile(song: i, list: 'playlist',removeSong: removeSong,));
+      songWidget.add(SongTile(song: i, list: 'playlist',removeSong: removeSong,));
     }
 
-    songWidget.value = widgets;
+    setState(() {
+
+    });
+
   }
 
   @override
@@ -48,23 +52,27 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
     super.initState();
 
     App.currentPlaylist = widget.playlist;
-    App.currentPlaylistSongs.clear();
+    currentPlaylist = Playlist(name: widget.playlist.name);
     if(widget.playlist.songs.isNotEmpty){
-      List<Widget> widgets = [];
       for(final i in App.allSongs){
 
         if(widget.playlist.songs.contains(i.data)){
+          currentPlaylist.songs.add(i.data);
           songs.add(i);
-          App.currentPlaylistSongs.add(i);
-          widgets.add(SongTile(song: i, list: 'playlist',removeSong: removeSong,));
+          songWidget.add(SongTile(song: i, list: 'playlist',removeSong: removeSong,));
         }
       }
 
-      songWidget.value = widgets;
 
       // setState(() {
       //
       // });
+    }
+
+    if(App.musicIsPlaying && App.currentList =='playlist' && App.currentPlaylistSongs == songs){
+      setState(() {
+        isPlaying = true;
+      });
     }
   }
 
@@ -73,20 +81,17 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
       loading = true;
     });
 
-    List<Widget> widgets = songWidget.value;
     for(final i in selectedSongs){
-      widget.playlist.songs.add(i.data);
-      widgets.add(SongTile(song: i, list: 'playlist'));
+      songs.add(i);
+      currentPlaylist.songs.add(i.data);
+      songWidget.add(SongTile(song: i, list: 'playlist'));
     }
-
+    
     await App.addSongsToPlaylist(widget.playlist.name, selectedSongs).then((val){
-      Navigator.pop(context,widget.playlist);
-      Navigator.push(context, MaterialPageRoute(builder: (context) => PlaylistSongs(playlist: widget.playlist)));
+      setState(() {
+        loading = false;
+      });
 
-      // setState(() {
-      //   loading = false;
-      // });
-      songWidget.value = widgets;
     });
   }
 
@@ -97,6 +102,7 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
 
   }
 
+
   @override
   Widget build(BuildContext context){
     final window = Column(
@@ -104,14 +110,14 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
         Container(
           padding: const EdgeInsets.only(bottom: 10,right: 70,left: 70),
           child: Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            color: const Color(0xff510723),
-            child: Container(
-              padding: const EdgeInsets.all(40),
-              child: const Image(
-                  image: AssetImage("icons/playlist.png")
-              ),
-            )
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              color: const Color(0xff510723),
+              child: Container(
+                padding: const EdgeInsets.all(40),
+                child: const Image(
+                    image: AssetImage("icons/playlist.png")
+                ),
+              )
           ),
         ),
         Container(
@@ -155,15 +161,36 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
               Container(
                 padding: const EdgeInsets.all(10),
                 child: GestureDetector(
-                  child: const Image(
-                    image: AssetImage("icons/play.png"),
+                  child: Image(
+                    image: AssetImage(isPlaying? "icons/pause.png" : "icons/play.png"),
                     height: 48,
                     width: 48,
                   ),
-                  onTap: (){},
+                  onTap: (){
+                    if(App.musicIsPlaying){
+                      if(App.currentList == 'playlist'){
+                        App.playOrpause();
+                      }else{
+                        App.currentList = 'playlist';
+                        App.currentPlaylistSongs = songs;
+                        App.playSong(songs[0]);
+                      }
+                    }else{
+                      if(App.currentList == 'playlist'){
+                        App.playOrpause();
+                      }else{
+                        App.currentList = 'playlist';
+                        App.currentPlaylistSongs = songs;
+                        App.playSong(songs[0]);
+                      }
+                    }
+                    setState(() {
+                      isPlaying = !isPlaying;
+                    });
+                  },
                 ),
               ),
-              SizedBox(width: 20,),
+              const SizedBox(width: 20,),
               Container(
                 padding: const EdgeInsets.all(10),
                 child: GestureDetector(
@@ -187,20 +214,15 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
           ),
         ),
         Expanded(
-          // padding: EdgeInsets.all(10),
-          child: ValueListenableBuilder(
-              valueListenable: songWidget,
-              builder: (context,value,child){
-                return ListView(
-                    padding: EdgeInsets.zero,
-                    shrinkWrap: true,
-                    children: value
-                );
-              }
-          )
+            child: SingleChildScrollView(
+              child: Column(
+                children: songWidget,
+              ),
+            )
         ),
       ],
     );
+
 
     final fullWindow = Scaffold(
       backgroundColor: const Color(0xff781F15),
@@ -208,7 +230,7 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
         backgroundColor: const Color(0xff781F15),
         leading: IconButton(
           onPressed: loading ? null : (){
-            Navigator.pop(context,widget.playlist);
+            Navigator.pop(context,currentPlaylist);
           },
           icon: const Icon(Icons.arrow_back_ios_new_rounded,color: Colors.white,size: 28,)
         ),
@@ -240,7 +262,7 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
       canPop: false,
       onPopInvoked: (val){
         if(val == false){
-          Navigator.of(context).pop(widget.playlist);
+          Navigator.of(context).pop(currentPlaylist);
         }
       },
       child: fullWindow,

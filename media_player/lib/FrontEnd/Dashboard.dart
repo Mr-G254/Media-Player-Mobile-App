@@ -191,9 +191,9 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
                   onTap: ()async{
                     String name = await Navigator.push(context, DialogRoute(context: context, builder: (context) => const NewPlaylistDialog()));
 
-                    if(name.isNotEmpty){
+                    if(name.length > 1){
                       await App.createPlaylist(name).then((val){
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => PlaylistSongs(playlist: Playlist(name: '${name}_playlist'))));
+                        // Navigator.push(context, MaterialPageRoute(builder: (context) => PlaylistSongs(playlist: Playlist(name: '${name}_playlist'))));
                       });
                     }
 
