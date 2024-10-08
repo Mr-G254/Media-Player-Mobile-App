@@ -9,7 +9,8 @@ import '../BackEnd/App.dart';
 class SongTile extends StatelessWidget {
   final SongModel song;
   final String list;
-  const SongTile({super.key, required this.song, required this.list});
+  final Function(SongModel)? removeSong;
+  const SongTile({super.key, required this.song, required this.list,this.removeSong});
 
   @override
   Widget build(BuildContext context){
@@ -81,7 +82,7 @@ class SongTile extends StatelessWidget {
                       )
                   ),
                   onTap: (){
-                    Navigator.push(context,DialogRoute(context: context, builder: (context) => SongOptions(song: song, list: list,)));
+                    Navigator.push(context,DialogRoute(context: context, builder: (context) => SongOptions(song: song, list: list,removeSong: removeSong,)));
                   },
                 )
               ],
@@ -99,9 +100,10 @@ class SongTile extends StatelessWidget {
               App.currentSongList = App.favouriteSongs;
             }else if(list == 'all'){
               App.currentSongList = App.allSongs;
+            }else if(list == 'playlist'){
+              App.currentSongList = App.currentPlaylistSongs;
             }
 
-            // Navigator.push(context, MaterialPageRoute(builder: (context) => NowPlaying(song: song)));
             Navigator.push(context, PageRouteBuilder(
                 pageBuilder: (context,animation,secondaryAnimation) =>NowPlaying(song: song),
                 transitionsBuilder: (context,animation,secondaryAnimation,child){
@@ -620,7 +622,8 @@ class _SelectSongsState extends State<SelectSongs>{
 class SongOptions extends StatelessWidget{
   final SongModel song;
   final String list;
-  const SongOptions({super.key,required this.song,required this.list});
+  final Function(SongModel)? removeSong;
+  const SongOptions({super.key,required this.song,required this.list,this.removeSong});
   
   Widget build(BuildContext context){
     return Container(
@@ -696,6 +699,7 @@ class SongOptions extends StatelessWidget{
                     ),
                   ),
                 ),
+                onTap: () => removeSong!(song),
               ),
             ),
             Visibility(

@@ -21,9 +21,11 @@ abstract class App{
   static List<SongModel> favouriteSongs = [];
   static List<SongModel> currentSongList = [];
   static List<SongModel> shuffledSongList = [];
+  static List<SongModel> currentPlaylistSongs = [];
 
   static List<String> allVideos = [];
   static List<Playlist> allPlaylist = [];
+  static Playlist currentPlaylist = Playlist(name: '');
 
   static ValueNotifier<List<Widget>> songDisplay= ValueNotifier([]);
   static ValueNotifier<List<Widget>> recentDisplay= ValueNotifier([]);
@@ -68,6 +70,7 @@ abstract class App{
     recentDisplay.value.add(SizedBox(height: minDisplayHeight));
 
     for(final i in AppDatabase.playlists){
+      allPlaylist.add(i);
       playlistDisplay.value.add(PlaylistTile(playlist: i));
     }
 
@@ -179,14 +182,21 @@ abstract class App{
     await AppDatabase.createPlaylist(playlistName);
 
     allPlaylist.add(Playlist(name: '${playlistName}_playlist'));
-    refreshPlaylistDisplay();
+
+    List<PlaylistTile> list = playlistDisplay.value;
+    list.add(PlaylistTile(playlist: Playlist(name: '${playlistName}_playlist')));
+
+    playlistDisplay.value = list;
+    // await refreshPlaylistDisplay();
   }
 
   static Future<void> deletePlaylist(Playlist playlist)async{
     await AppDatabase.deletePlaylist(playlist.name);
 
+    print(allPlaylist.length);
     allPlaylist.remove(playlist);
-    refreshPlaylistDisplay();
+    print(allPlaylist.length);
+    await refreshPlaylistDisplay();
   }
 
   static Future<void> addSongsToPlaylist(String playlistName,List<SongModel> songs)async{
@@ -249,7 +259,7 @@ abstract class App{
     recentDisplay.value = rec;
   }
 
-  static void refreshPlaylistDisplay(){
+  static Future<void> refreshPlaylistDisplay()async{
     List<PlaylistTile> play = [];
 
     for(final i in allPlaylist){

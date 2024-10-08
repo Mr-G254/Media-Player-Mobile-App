@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:media_player/BackEnd/Playlist.dart';
 import 'package:media_player/FrontEnd/Components.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-
 import '../BackEnd/App.dart';
 
 class PlaylistSongs extends StatefulWidget{
@@ -16,26 +16,55 @@ class PlaylistSongs extends StatefulWidget{
 
 class _PlaylistSongsState extends State<PlaylistSongs>{
   List<SongModel> songs = [];
-  List<Widget> songWidget = [];
+  ValueNotifier<List<Widget>> songWidget = ValueNotifier([]);
   List<SongModel> selectedSongs = [];
   bool loading = false;
+
+  void removeSong(SongModel song)async{
+    await App.removeSongFromPlaylist(widget.playlist.name, song);
+    widget.playlist.songs.remove(song.data);
+    songs.remove(song);
+
+    if(context.mounted){
+      Navigator.pop(context);
+    }
+    refresh();
+
+  }
+
+  void refresh(){
+    List<Widget> widgets = [];
+
+    for(final i in songs){
+      widgets.add(SongTile(song: i, list: 'playlist',removeSong: removeSong,));
+    }
+
+    songWidget.value = widgets;
+  }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
+    App.currentPlaylist = widget.playlist;
+    App.currentPlaylistSongs.clear();
     if(widget.playlist.songs.isNotEmpty){
+      List<Widget> widgets = [];
       for(final i in App.allSongs){
+
         if(widget.playlist.songs.contains(i.data)){
           songs.add(i);
-          songWidget.add(SongTile(song: i, list: 'playlist'));
+          App.currentPlaylistSongs.add(i);
+          widgets.add(SongTile(song: i, list: 'playlist',removeSong: removeSong,));
         }
       }
 
-      setState(() {
+      songWidget.value = widgets;
 
-      });
+      // setState(() {
+      //
+      // });
     }
   }
 
@@ -44,18 +73,20 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
       loading = true;
     });
 
+    List<Widget> widgets = songWidget.value;
     for(final i in selectedSongs){
       widget.playlist.songs.add(i.data);
-      songWidget.add(SongTile(song: i, list: 'playlist'));
+      widgets.add(SongTile(song: i, list: 'playlist'));
     }
 
     await App.addSongsToPlaylist(widget.playlist.name, selectedSongs).then((val){
       Navigator.pop(context,widget.playlist);
       Navigator.push(context, MaterialPageRoute(builder: (context) => PlaylistSongs(playlist: widget.playlist)));
 
-      setState(() {
-        loading = false;
-      });
+      // setState(() {
+      //   loading = false;
+      // });
+      songWidget.value = widgets;
     });
   }
 
@@ -157,16 +188,21 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
         ),
         Expanded(
           // padding: EdgeInsets.all(10),
-          child: ListView(
-              padding: EdgeInsets.zero,
-              shrinkWrap: true,
-              children: songWidget
-          ),
+          child: ValueListenableBuilder(
+              valueListenable: songWidget,
+              builder: (context,value,child){
+                return ListView(
+                    padding: EdgeInsets.zero,
+                    shrinkWrap: true,
+                    children: value
+                );
+              }
+          )
         ),
       ],
     );
 
-    return Scaffold(
+    final fullWindow = Scaffold(
       backgroundColor: const Color(0xff781F15),
       appBar: AppBar(
         backgroundColor: const Color(0xff781F15),
@@ -198,6 +234,16 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
           )
         ],
       ),
+    );
+
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (val){
+        if(val == false){
+          Navigator.of(context).pop(widget.playlist);
+        }
+      },
+      child: fullWindow,
     );
   }
 }
