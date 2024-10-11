@@ -218,7 +218,7 @@ class _NowPlayingState extends State<NowPlaying>{
               ),
               GestureDetector(
                 child: Image(
-                  image: AssetImage(App.musicIsPlaying ? "icons/pause.png" : "icons/play.png"),
+                  image: AssetImage(App.musicIsPlaying.value ? "icons/pause.png" : "icons/play.png"),
                   height: 50,
                   width: 50,
                 ),
@@ -253,7 +253,9 @@ class _NowPlayingState extends State<NowPlaying>{
         padding: const EdgeInsets.all(0),
         width: double.infinity,
         height: double.infinity,
-        child: window,
+        child: SingleChildScrollView(
+          child: window,
+        ),
       ),
     );
   }

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:highlight_text/highlight_text.dart';
 import 'package:media_player/BackEnd/Database.dart';
 import 'package:media_player/BackEnd/Playlist.dart';
 import 'package:media_player/FrontEnd/NowPlaying.dart';
 import 'package:media_player/FrontEnd/PlaylistSongs.dart';
+import 'package:mini_music_visualizer/mini_music_visualizer.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../BackEnd/App.dart';
 
@@ -12,10 +14,22 @@ class SongTile extends StatelessWidget {
   final String list;
   final String? playlistName;
   final Function(SongModel)? removeSong;
-  const SongTile({super.key, required this.song, required this.list,this.removeSong,this.playlistName});
+  final String searchText;
+  const SongTile({super.key, required this.song, required this.list,required this.searchText,this.removeSong,this.playlistName});
 
   @override
   Widget build(BuildContext context){
+    Map<String, HighlightedWord> words = {
+      searchText : HighlightedWord(
+        textStyle: const TextStyle(
+          fontFamily: "Orelega",
+          fontSize: 18,
+          color: Color(0xffE1246B),
+          overflow: TextOverflow.ellipsis
+        ),
+      )
+    };
+
     return ValueListenableBuilder<SongModel>(
       valueListenable: App.currentSong,
       builder: (context,value,child){
@@ -36,7 +50,7 @@ class SongTile extends StatelessWidget {
                       borderRadius: BorderRadius.circular(6)
                   ),
                   child: Image(
-                    color: song == value ? const Color(0xffE1246B) : Colors.white,
+                    color: list == 'none'? Colors.white : song == value ? const Color(0xffE1246B) : Colors.white,
                     image: const AssetImage("icons/wave.png"),
                     height: 30,
                     width: 30,
@@ -48,14 +62,15 @@ class SongTile extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(0),
-                        child: Text(
-                          song.title,
+                        padding: const EdgeInsets.only(right: 10),
+                        child: TextHighlight(
+                          text: song.title,
+                          words: words,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
+                          textStyle: TextStyle(
                             fontFamily: "Orelega",
                             fontSize: 18,
-                            color: song == value ? const Color(0xffE1246B) : Colors.white,
+                            color: list == 'none'? Colors.white : song == value ? const Color(0xffE1246B) : Colors.white,
                           ),
                         ),
                       ),
@@ -73,19 +88,22 @@ class SongTile extends StatelessWidget {
                     ],
                   ),
                 ),
-                GestureDetector(
-                  child: Container(
-                      padding: const EdgeInsets.all(10),
-                      child: Image(
-                        color: song == value ? const Color(0xffE1246B) : Colors.white,
-                        image: const AssetImage("icons/menu.png"),
-                        width: 30,
-                        height: 30,
-                      )
+                Visibility(
+                  visible: list != 'none',
+                  child: GestureDetector(
+                    child: Container(
+                        padding: const EdgeInsets.only(right: 10),
+                        child: Image(
+                          color: song == value ? const Color(0xffE1246B) : Colors.white,
+                          image: const AssetImage("icons/menu.png"),
+                          width: 30,
+                          height: 30,
+                        )
+                    ),
+                    onTap: (){
+                      Navigator.push(context,DialogRoute(context: context, builder: (context) => SongOptions(song: song, list: list,removeSong: removeSong,)));
+                    },
                   ),
-                  onTap: (){
-                    Navigator.push(context,DialogRoute(context: context, builder: (context) => SongOptions(song: song, list: list,removeSong: removeSong,)));
-                  },
                 )
               ],
             ),
@@ -108,13 +126,20 @@ class SongTile extends StatelessWidget {
             }
 
             if(list == "recent"){
+              App.currentPlaylistName.value = '';
               App.currentSongList = App.recentSongs;
             }else if(list == 'favourite'){
+              App.currentPlaylistName.value = '';
               App.currentSongList = App.favouriteSongs;
             }else if(list == 'all'){
+              App.currentPlaylistName.value = '';
               App.currentSongList = App.allSongs;
             }else if(list == 'playlist'){
+              App.currentPlaylistName.value = playlistName!;
               App.currentSongList = App.currentPlaylistSongs;
+            }else if(list == 'none'){
+              App.currentPlaylistName.value = '';
+              App.currentSongList = App.allSongs;
             }
 
             Navigator.push(context, PageRouteBuilder(
@@ -154,58 +179,73 @@ class _PlaylistTileState extends State<PlaylistTile>{
 
   @override
   Widget build(BuildContext context){
-    return GestureDetector(
-      child: Container(
-        padding: const EdgeInsets.all(2),
-        child: Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          color: const Color(0xff510723),
-          child: Stack(
-            children: [
-              Container(
-                alignment: Alignment.center,
-                padding: EdgeInsets.all(30),
-                child: const Image(
-                  image: AssetImage("icons/playlist.png"),
+    return AnimatedBuilder(
+        animation: Listenable.merge([App.currentPlaylistName,App.musicIsPlaying]),
+        builder: (context,_){
+          return GestureDetector(
+            child: Container(
+              padding: const EdgeInsets.all(2),
+              child: Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                color: const Color(0xff510723),
+                child: Stack(
+                  children: [
+                    Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.all(30),
+                      child:
+                      App.currentPlaylistName.value == widget.playlist.name?
+                      MiniMusicVisualizer(
+                        radius: 6,
+                        color: const Color(0xffE1246B),
+                        width: MediaQuery.of(context).size.width/20,
+                        height: MediaQuery.of(context).size.height/10,
+                        animate: App.musicIsPlaying.value,
+                      ) :
+                      const Image(
+                        image: AssetImage("icons/playlist.png"),
+                      ),
+                    ),
+                    Container(
+                      alignment: Alignment.topRight,
+                      padding: const EdgeInsets.only(top: 5,right: 7),
+                      child: Text(
+                        '${currentPlaylist.songs.length} songs',
+                        style: const TextStyle(
+                          fontFamily: "Orelega",
+                          fontSize: 15,
+                          color: Colors.white54,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      alignment: Alignment.bottomLeft,
+                      padding: const EdgeInsets.only(bottom: 5,left: 8),
+                      child: Text(
+                        currentPlaylist.name.split('_')[0],
+                        style: const TextStyle(
+                          fontFamily: "Orelega",
+                          fontSize: 17,
+                          color: Colors.white,
+                        ),
+                      ),
+                    )
+                  ],
                 ),
               ),
-              Container(
-                alignment: Alignment.topRight,
-                padding: const EdgeInsets.only(top: 5,right: 7),
-                child: Text(
-                  '${currentPlaylist.songs.length} songs',
-                  style: const TextStyle(
-                    fontFamily: "Orelega",
-                    fontSize: 15,
-                    color: Colors.white54,
-                  ),
-                ),
-              ),
-              Container(
-                alignment: Alignment.bottomLeft,
-                padding: const EdgeInsets.only(bottom: 5,left: 8),
-                child: Text(
-                  currentPlaylist.name.split('_')[0],
-                  style: const TextStyle(
-                    fontFamily: "Orelega",
-                    fontSize: 17,
-                    color: Colors.white,
-                  ),
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
-      onTap: ()async{
-        var play = await Navigator.push(context, MaterialPageRoute(builder: (context) => PlaylistSongs(playlist: currentPlaylist)));
+            ),
+            onTap: ()async{
+              var play = await Navigator.push(context, MaterialPageRoute(builder: (context) => PlaylistSongs(playlist: currentPlaylist)));
 
-        if(play != null){
-          setState(() {
-            currentPlaylist = play;
-          });
+              if(play != null){
+                setState(() {
+                  currentPlaylist = play;
+                });
+                App.refreshPlaylistDisplay();
+              }
+            },
+          );
         }
-      },
     );
   }
 }

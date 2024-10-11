@@ -44,6 +44,8 @@ dependencies:
   permission_handler: ^11.3.1
   device_info_plus: ^10.1.2
   appinio_social_share: ^0.3.2
+  mini_music_visualizer: ^1.1.4
+  highlight_text: ^1.8.0
 
 dev_dependencies:
   flutter_test:

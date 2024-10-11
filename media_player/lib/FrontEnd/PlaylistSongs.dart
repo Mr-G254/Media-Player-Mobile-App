@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:media_player/BackEnd/Playlist.dart';
@@ -14,13 +15,66 @@ class PlaylistSongs extends StatefulWidget{
 
 }
 
-class _PlaylistSongsState extends State<PlaylistSongs>{
+class _PlaylistSongsState extends State<PlaylistSongs> with RouteAware{
   late Playlist currentPlaylist;
   List<SongModel> songs = [];
   List<Widget> songWidget = [];
   List<SongModel> selectedSongs = [];
   bool isPlaying = false;
   bool loading = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    App.currentPlaylist = widget.playlist;
+    currentPlaylist = Playlist(name: widget.playlist.name);
+    if(widget.playlist.songs.isNotEmpty){
+      for(final i in App.allSongs){
+
+        if(widget.playlist.songs.contains(i.data)){
+          currentPlaylist.songs.add(i.data);
+          songs.add(i);
+          songWidget.add(SongTile(song: i, list: 'playlist',removeSong: removeSong,playlistName: widget.playlist.name, searchText: '',));
+        }
+      }
+
+
+      // setState(() {
+      //
+      // });
+    }
+
+    if(App.musicIsPlaying.value && App.currentPlaylistName.value == widget.playlist.name){
+      setState(() {
+        isPlaying = true;
+      });
+    }
+  }
+
+  @override
+  didChangeDependencies(){
+    super.didChangeDependencies();
+    App.routeObserver.subscribe(this, ModalRoute.of(context)!);
+  }
+
+  @override
+  void dispose() {
+    App.routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    // TODO: implement didPopNext
+    super.didPopNext();
+    if(App.musicIsPlaying.value && App.currentPlaylistName.value == widget.playlist.name){
+      setState(() {
+        isPlaying = true;
+      });
+    }
+  }
 
   void removeSong(SongModel song)async{
     await App.removeSongFromPlaylist(widget.playlist.name, song);
@@ -37,43 +91,13 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
   void refresh(){
     songWidget.clear();
     for(final i in songs){
-      songWidget.add(SongTile(song: i, list: 'playlist',removeSong: removeSong,));
+      songWidget.add(SongTile(song: i, list: 'playlist',removeSong: removeSong, searchText: '',));
     }
 
     setState(() {
 
     });
 
-  }
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-
-    App.currentPlaylist = widget.playlist;
-    currentPlaylist = Playlist(name: widget.playlist.name);
-    if(widget.playlist.songs.isNotEmpty){
-      for(final i in App.allSongs){
-
-        if(widget.playlist.songs.contains(i.data)){
-          currentPlaylist.songs.add(i.data);
-          songs.add(i);
-          songWidget.add(SongTile(song: i, list: 'playlist',removeSong: removeSong,));
-        }
-      }
-
-
-      // setState(() {
-      //
-      // });
-    }
-
-    if(App.musicIsPlaying && App.currentList =='playlist' && App.currentPlaylistSongs == songs){
-      setState(() {
-        isPlaying = true;
-      });
-    }
   }
 
   void addSongs()async{
@@ -84,10 +108,13 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
     for(final i in selectedSongs){
       songs.add(i);
       currentPlaylist.songs.add(i.data);
-      songWidget.add(SongTile(song: i, list: 'playlist'));
+      songWidget.add(SongTile(song: i, list: 'playlist', searchText: '',));
     }
     
     await App.addSongsToPlaylist(widget.playlist.name, selectedSongs).then((val){
+      if(App.musicIsPlaying.value){
+        isPlaying = true;
+      }
       setState(() {
         loading = false;
       });
@@ -167,18 +194,21 @@ class _PlaylistSongsState extends State<PlaylistSongs>{
                     width: 48,
                   ),
                   onTap: (){
-                    if(App.musicIsPlaying){
-                      if(App.currentList == 'playlist'){
+
+                    if(App.musicIsPlaying.value){
+                      if(App.currentPlaylistName.value == widget.playlist.name){
                         App.playOrpause();
                       }else{
+                        App.currentPlaylistName.value = widget.playlist.name;
                         App.currentList = 'playlist';
                         App.currentPlaylistSongs = songs;
                         App.playSong(songs[0]);
                       }
                     }else{
-                      if(App.currentList == 'playlist'){
+                      if(App.currentPlaylistName.value == widget.playlist.name){
                         App.playOrpause();
                       }else{
+                        App.currentPlaylistName.value = widget.playlist.name;
                         App.currentList = 'playlist';
                         App.currentPlaylistSongs = songs;
                         App.playSong(songs[0]);

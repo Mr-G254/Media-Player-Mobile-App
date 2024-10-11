@@ -15,7 +15,6 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> with TickerProviderStateMixin{
-  late AppLifecycleListener listener;
   late TabController controller;
   late StreamSubscription<Duration> progressEvent;
   late StreamSubscription<void> onEndEvent;
@@ -26,9 +25,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
   void initState() {
     // TODO: implement initState
     super.initState();
-    listener = AppLifecycleListener(onStateChange: (val){
-      App.close();
-    });
     controller = TabController(length: 4, vsync: this,initialIndex: currentIndex,animationDuration: Duration(milliseconds: 500));
     controller.addListener((){
       setState(() {
@@ -54,7 +50,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
           });
         }else{
           setState(() {
-            App.musicIsPlaying = false;
+            App.musicIsPlaying.value = false;
           });
         }
 
@@ -73,7 +69,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     controller.dispose();
     progressEvent.cancel();
     onEndEvent.cancel();
-    listener.dispose();
     App.player.dispose();
 
     // TODO: implement dispose
@@ -173,7 +168,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                                       padding: EdgeInsets.all(0),
                                       child: Image(
                                         color: Colors.white,
-                                        image: AssetImage(App.musicIsPlaying ? "icons/pause2.png" : "icons/play2.png"),
+                                        image: AssetImage(App.musicIsPlaying.value ? "icons/pause2.png" : "icons/play2.png"),
                                         height: 20,
                                         width: 20,
                                       ),

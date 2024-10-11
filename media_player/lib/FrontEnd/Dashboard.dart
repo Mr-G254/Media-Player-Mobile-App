@@ -206,10 +206,15 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
         Expanded(
           child: TabBarView(
             controller: controller,
-            children: const [
-              RecentView(),
-              PlaylistView(),
-              FavouriteView()
+            children: [
+              const RecentView(),
+              Column(
+                children: [
+                  const Expanded(child: PlaylistView()),
+                  SizedBox(height: MediaQuery.of(context).size.height/11,)
+                ],
+              ),
+              const FavouriteView()
             ],
           )
         ),

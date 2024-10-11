@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'BackEnd/App.dart';
 import 'FrontEnd/Splashscreen.dart';
 
 void main() {
-  runApp(const MaterialApp(home: Splashscreen(),));
+  runApp(MaterialApp(
+    home: const Splashscreen(),
+    navigatorObservers: [App.routeObserver],
+  ));
 }
 
