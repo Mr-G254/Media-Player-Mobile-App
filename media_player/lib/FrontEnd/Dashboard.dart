@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:media_player/BackEnd/Playlist.dart';
 import 'package:media_player/FrontEnd/Components.dart';
 import 'package:media_player/FrontEnd/Dashboard/FavouriteView.dart';
 import 'package:media_player/FrontEnd/Dashboard/RecentView.dart';
-import 'package:media_player/FrontEnd/PlaylistSongs.dart';
-
 import '../BackEnd/App.dart';
 import 'Dashboard/PlaylistView.dart';
 

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import '../BackEnd/App.dart';
 import 'Home.dart';
 
@@ -12,7 +11,6 @@ class Splashscreen extends StatefulWidget{
 }
 
 class _SplashscreenState extends State<Splashscreen>{
-  // late Timer timer;
 
   @override
   void initState(){

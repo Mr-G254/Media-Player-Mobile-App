@@ -46,6 +46,7 @@ dependencies:
   appinio_social_share: ^0.3.2
   mini_music_visualizer: ^1.1.4
   highlight_text: ^1.8.0
+  audio_service: ^0.18.15
 
 dev_dependencies:
   flutter_test:
@@ -99,6 +100,7 @@ flutter:
     - icons/bin.png
     - icons/plus.png
     - icons/shuffle off.png
+    - icons/icon.png
 
   fonts:
     - family: Orelega

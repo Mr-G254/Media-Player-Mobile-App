@@ -44,7 +44,7 @@ class SongTile extends StatelessWidget {
                 Container(
                   height: 50,
                   width: 50,
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(7),
                   decoration: BoxDecoration(
                       color: const Color(0xff510723),
                       borderRadius: BorderRadius.circular(6)

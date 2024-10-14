@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:audio_service/audio_service.dart';
 import 'package:appinio_social_share/appinio_social_share.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -16,7 +17,7 @@ abstract class App{
   static RouteObserver<ModalRoute> routeObserver = RouteObserver<ModalRoute>();
   static OnAudioQuery _audioQuery = OnAudioQuery();
   static AudioPlayer player = AudioPlayer();
-
+  static late BaseAudioHandler audioHandler;
 
   static List<SongModel> allSongs = [];
   static List<SongModel> recentSongs = [];
@@ -94,13 +95,19 @@ abstract class App{
     player.setSourceDeviceFile(currentSong.value.data);
     player.setReleaseMode(ReleaseMode.stop);
 
+    updateSongUI(currentSong.value);
+    updateIsPlayingUI(false);
   }
   
   static void playSong(SongModel song){
     currentSong.value = song;
     currentSongDuration = song.duration;
+
+    updateSongUI(currentSong.value);
     player.play(DeviceFileSource(song.data));
+
     musicIsPlaying.value = true;
+    updateIsPlayingUI(true);
 
     if(currentList != 'recent'){
       addRecent(song);
@@ -112,9 +119,11 @@ abstract class App{
     if(musicIsPlaying.value){
       player.pause();
       musicIsPlaying.value = false;
+      updateIsPlayingUI(false);
     }else{
       player.resume();
       musicIsPlaying.value = true;
+      updateIsPlayingUI(true);
     }
 
   }
@@ -199,9 +208,7 @@ abstract class App{
   static Future<void> deletePlaylist(Playlist playlist)async{
     await AppDatabase.deletePlaylist(playlist.name);
 
-    print(allPlaylist.length);
     allPlaylist.remove(playlist);
-    print(allPlaylist.length);
     await refreshPlaylistDisplay();
   }
 
@@ -321,7 +328,6 @@ abstract class App{
 
 
     var path = join(getExternalStorageDirectory().toString(),song.data);
-    print(path);
     await File(path).delete();
 
     allSongs = await _audioQuery.querySongs();
@@ -356,6 +362,50 @@ abstract class App{
 
   static Future<void> shareSong(SongModel song)async{
     await AppinioSocialShare().android.shareFilesToSystem(song.title, [song.data]);
+  }
+  
+  static updateSongUI(SongModel song){
+    audioHandler.mediaItem.add(MediaItem(id: song.id.toString(), title: song.title,duration: Duration(milliseconds: song.duration!)));
+  }
+
+  static updateIsPlayingUI(bool isPlaying){
+    if(isPlaying){
+      audioHandler.playbackState.add(audioHandler.playbackState.value.copyWith(
+        playing: isPlaying,
+        processingState: AudioProcessingState.ready,
+        controls: [
+          MediaControl.pause,
+          MediaControl.skipToNext,
+          MediaControl.skipToPrevious
+        ],
+        systemActions: {
+          MediaAction.seek,
+          MediaAction.seekForward,
+          MediaAction.seekBackward,
+        }
+      ));
+
+    }else{
+      audioHandler.playbackState.add(audioHandler.playbackState.value.copyWith(
+        playing: isPlaying,
+          processingState: AudioProcessingState.ready,
+          controls: [
+            MediaControl.play,
+            MediaControl.skipToNext,
+            MediaControl.skipToPrevious
+          ],
+          systemActions: {
+            MediaAction.seek,
+            MediaAction.seekForward,
+            MediaAction.seekBackward,
+          }
+      ));
+    }
+
+  }
+
+  static updateProgressUI(Duration pos){
+    audioHandler.playbackState.add(audioHandler.playbackState.value.copyWith(updatePosition: pos));
   }
 
 }

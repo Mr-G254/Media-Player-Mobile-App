@@ -56,7 +56,6 @@ abstract class AppDatabase{
 
     for(final i in list){
       var playName = i['name'] as String;
-      print(playName);
       final playlist = Playlist(name: playName);
       
       var songs = await getPlaylistSongs(playName);

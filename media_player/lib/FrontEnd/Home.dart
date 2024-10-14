@@ -25,6 +25,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
   void initState() {
     // TODO: implement initState
     super.initState();
+
     controller = TabController(length: 4, vsync: this,initialIndex: currentIndex,animationDuration: Duration(milliseconds: 500));
     controller.addListener((){
       setState(() {
@@ -33,9 +34,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     });
 
     progressEvent = App.player.onPositionChanged.listen((dur){
+      App.updateProgressUI(dur);
       setState(() {
         currentPosition = dur.inMilliseconds/App.currentSongDuration!;
       });
+      // App.updateProgressUI(dur);
     });
 
     onEndEvent = App.player.onPlayerComplete.listen((dur){
@@ -112,7 +115,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                           color: const Color(0xff510723),
                           child: Container(
-                            margin: const EdgeInsets.all(10),
+                            margin: const EdgeInsets.all(7),
                             // padding: const EdgeInsets.all(20),
                             child: const Image(
                               image: AssetImage("icons/wave.png"),
