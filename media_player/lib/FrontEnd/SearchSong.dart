@@ -26,7 +26,7 @@ class _SearchSongState extends State<Searchsong>{
           widgets.clear();
         });
       }else{
-        List<SongModel> songList = App.allSongs.where((song) => song.title.contains(searchText.text.toString())).toList();
+        List<SongModel> songList = App.allSongs.where((song) => song.title.toLowerCase().contains(searchText.text.toLowerCase())).toList();
 
         List<SongTile> tile = [];
         for(final i in songList){
@@ -59,6 +59,7 @@ class _SearchSongState extends State<Searchsong>{
         },
       ),
       title: TextField(
+        autofocus: true,
         controller: searchText,
         cursorColor: Colors.white,
         style: const TextStyle(
