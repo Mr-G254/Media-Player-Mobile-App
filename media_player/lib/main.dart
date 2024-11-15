@@ -10,7 +10,6 @@ Future<void> main() async {
     config: const AudioServiceConfig(
       androidNotificationOngoing: true,
       androidNotificationChannelName: 'Music playback',
-      androidShowNotificationBadge: true,
       notificationColor: Color(0xff5C1C14),
       androidNotificationIcon: 'mipmap/launcher_icon'
     ),

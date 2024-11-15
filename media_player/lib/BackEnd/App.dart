@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:audio_service/audio_service.dart';
 import 'package:appinio_social_share/appinio_social_share.dart';
+import 'package:audio_session/audio_session.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/cupertino.dart';
@@ -12,12 +13,15 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:video_storage_query/video_storage_query.dart';
 
 abstract class App{
   static RouteObserver<ModalRoute> routeObserver = RouteObserver<ModalRoute>();
   static OnAudioQuery _audioQuery = OnAudioQuery();
+  static VideoStorageQuery videoQuery = VideoStorageQuery();
   static AudioPlayer player = AudioPlayer();
   static late BaseAudioHandler audioHandler;
+  static late AudioSession session;
 
   static List<SongModel> allSongs = [];
   static List<SongModel> recentSongs = [];
@@ -26,7 +30,7 @@ abstract class App{
   static List<SongModel> shuffledSongList = [];
   static List<SongModel> currentPlaylistSongs = [];
 
-  static List<String> allVideos = [];
+  static List<VideoItem> allVideos = [];
   static List<Playlist> allPlaylist = [];
   static Playlist currentPlaylist = Playlist(name: '');
 
@@ -34,6 +38,8 @@ abstract class App{
   static ValueNotifier<List<Widget>> recentDisplay= ValueNotifier([]);
   static ValueNotifier<List<Widget>> favouriteDisplay= ValueNotifier([]);
   static ValueNotifier<List<PlaylistTile>> playlistDisplay= ValueNotifier([]);
+
+  static ValueNotifier<List<Widget>> videoDisplay= ValueNotifier([]);
 
   static String currentList = "all";
 
@@ -50,6 +56,9 @@ abstract class App{
 
   static Future<void> initialize()async{
     await AppDatabase.initialize();
+    allVideos = await videoQuery.queryVideos();
+
+    await initializeAudioSession();
     await _audioQuery.checkAndRequest(retryRequest: true);
     allSongs = await _audioQuery.querySongs();
     allSongs = allSongs.where((song) => song.isMusic == true).toList();
@@ -97,6 +106,12 @@ abstract class App{
 
     updateSongUI(currentSong.value);
     updateIsPlayingUI(false);
+
+
+
+    for(final i in allVideos){
+      videoDisplay.value.add(VideoCard(video: i));
+    }
   }
   
   static void playSong(SongModel song){
@@ -364,48 +379,44 @@ abstract class App{
     await AppinioSocialShare().android.shareFilesToSystem(song.title, [song.data]);
   }
   
-  static updateSongUI(SongModel song){
+  static void updateSongUI(SongModel song){
     audioHandler.mediaItem.add(MediaItem(id: song.id.toString(), title: song.title,duration: Duration(milliseconds: song.duration!)));
+    audioHandler.playbackState.add(audioHandler.playbackState.value.copyWith(
+      processingState: AudioProcessingState.ready,
+      androidCompactActionIndices: [0, 1, 2],
+      controls: [
+        MediaControl.play,
+        MediaControl.skipToNext,
+        MediaControl.skipToPrevious
+      ],
+      systemActions: {
+        MediaAction.seek,
+        MediaAction.seekForward,
+        MediaAction.seekBackward,
+      }
+    ));
   }
 
-  static updateIsPlayingUI(bool isPlaying){
-    if(isPlaying){
-      audioHandler.playbackState.add(audioHandler.playbackState.value.copyWith(
-        playing: isPlaying,
-        processingState: AudioProcessingState.ready,
-        controls: [
-          MediaControl.pause,
-          MediaControl.skipToNext,
-          MediaControl.skipToPrevious
-        ],
-        systemActions: {
-          MediaAction.seek,
-          MediaAction.seekForward,
-          MediaAction.seekBackward,
-        }
-      ));
-
-    }else{
-      audioHandler.playbackState.add(audioHandler.playbackState.value.copyWith(
-        playing: isPlaying,
-          processingState: AudioProcessingState.ready,
-          controls: [
-            MediaControl.play,
-            MediaControl.skipToNext,
-            MediaControl.skipToPrevious
-          ],
-          systemActions: {
-            MediaAction.seek,
-            MediaAction.seekForward,
-            MediaAction.seekBackward,
-          }
-      ));
-    }
+  static void updateIsPlayingUI(bool isPlaying){
+    audioHandler.playbackState.add(audioHandler.playbackState.value.copyWith(
+      playing: isPlaying,
+      controls: [
+        isPlaying? MediaControl.pause : MediaControl.play,
+        MediaControl.skipToNext,
+        MediaControl.skipToPrevious
+      ],
+    ));
 
   }
 
-  static updateProgressUI(Duration pos){
+  static void updateProgressUI(Duration pos){
     audioHandler.playbackState.add(audioHandler.playbackState.value.copyWith(updatePosition: pos));
+  }
+
+  static Future<void> initializeAudioSession()async{
+    session = await AudioSession.instance;
+    await session.configure(const AudioSessionConfiguration.music());
+    await session.setActive(true);
   }
 
 }

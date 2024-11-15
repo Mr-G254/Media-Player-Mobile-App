@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:highlight_text/highlight_text.dart';
@@ -7,6 +9,9 @@ import 'package:media_player/FrontEnd/NowPlaying.dart';
 import 'package:media_player/FrontEnd/PlaylistSongs.dart';
 import 'package:mini_music_visualizer/mini_music_visualizer.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:units_converter/models/extension_converter.dart';
+import 'package:units_converter/units_converter.dart';
+import 'package:video_storage_query/video_storage_query.dart';
 import '../BackEnd/App.dart';
 
 class SongTile extends StatelessWidget {
@@ -781,6 +786,117 @@ class SongOptions extends StatelessWidget{
               ),
             )
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class VideoCard extends StatefulWidget {
+  final VideoItem video;
+
+  const VideoCard({super.key, required this.video});
+
+  @override
+  State<VideoCard> createState() => _VideoCardState();
+
+}
+
+class _VideoCardState extends State<VideoCard>{
+  late Uint8List image;
+
+  @override
+  void initState() async{
+    // TODO: implement initState
+    super.initState();
+    image = await App.videoQuery.getVideoThumbnail(widget.video.path);
+  }
+
+  @override
+  Widget build(BuildContext context){
+    return Container(
+      padding: const EdgeInsets.all(5),
+      child: GestureDetector(
+        child: Card(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          color: const Color(0xff5C1C14),
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              children: [
+                Expanded(
+                  flex: 9,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: Card(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          child: Image(image: MemoryImage(image),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Container(
+                          padding: const EdgeInsets.only(left: 10),
+                          child: Column(
+                            children: [
+                              Text(
+                                "Dur : ${int.parse(widget.video.duration).convertFromTo(TIME.milliseconds,TIME.minutes)}",
+                                style: const TextStyle(
+                                  overflow: TextOverflow.ellipsis,
+                                  fontFamily: "Orelega",
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                "Size : ${int.parse(widget.video.size).convertFromTo(DIGITAL_DATA.byte, DIGITAL_DATA.megabyte)} MB",
+                                style: const TextStyle(
+                                  overflow: TextOverflow.ellipsis,
+                                  fontFamily: "Orelega",
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      )
+                    ],
+                  ),
+                ),
+                Expanded(
+                    flex: 1,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.only(right: 10),
+                          child: Text(
+                            widget.video.name,
+                            style: const TextStyle(
+                              overflow: TextOverflow.ellipsis,
+                              fontFamily: "Orelega",
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          child: const Image(
+                            image: AssetImage("icons/menu.png"),
+                            width: 28,
+                            height: 28,
+                          ),
+                        )
+                      ],
+                    )
+                ),
+              ],
+            ),
+          )
         ),
       ),
     );

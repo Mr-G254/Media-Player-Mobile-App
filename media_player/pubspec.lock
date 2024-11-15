@@ -42,7 +42,7 @@ packages:
     source: hosted
     version: "0.1.3"
   audio_session:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: audio_session
       sha256: "343e83bc7809fbda2591a49e525d6b63213ade10c76f15813be9aed6657b3261"
@@ -605,6 +605,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.2"
+  units_converter:
+    dependency: "direct main"
+    description:
+      name: units_converter
+      sha256: "0e0b62a7ac10e6c79942aa52a14225733ce3bc68b70b4d64f99e79fc4477ad6f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.2"
   uuid:
     dependency: transitive
     description:
@@ -621,6 +629,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.4"
+  video_storage_query:
+    dependency: "direct main"
+    description:
+      name: video_storage_query
+      sha256: "73b8bed8581fef46c5bbb263a219c713829aa29ffe3c65633788b0349c0cdf08"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   vm_service:
     dependency: transitive
     description:

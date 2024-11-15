@@ -47,6 +47,9 @@ dependencies:
   mini_music_visualizer: ^1.1.4
   highlight_text: ^1.8.0
   audio_service: ^0.18.15
+  audio_session: ^0.1.21
+  video_storage_query: ^1.0.0
+  units_converter: ^3.0.2
 
 dev_dependencies:
   flutter_test:

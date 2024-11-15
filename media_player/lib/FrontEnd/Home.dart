@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:media_player/FrontEnd/Dashboard.dart';
 import '../BackEnd/App.dart';
@@ -65,6 +66,39 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
       }
     });
 
+    App.session.interruptionEventStream.listen((event)async{
+      print(event.type.toString());
+      if(event.begin){
+        print('object');
+        if(event.type == AudioInterruptionType.unknown){
+          // if(App.musicIsPlaying.value){
+          await App.player.pause();
+          App.musicIsPlaying.value = false;
+          // }
+
+          App.updateIsPlayingUI(false);
+        }
+      }else{
+
+        print('object2');
+        if(event.type == AudioInterruptionType.unknown){
+          // if(!App.musicIsPlaying.value){
+          await App.player.resume();
+          App.musicIsPlaying.value = true;
+          // }
+
+          App.updateIsPlayingUI(true);
+        }
+      }
+    });
+
+    App.session.becomingNoisyEventStream.listen((_) {
+      print("222222222222");
+      if(App.musicIsPlaying.value){
+        App.playOrpause();
+        App.updateIsPlayingUI(false);
+      }
+    });
   }
 
   @override
@@ -86,7 +120,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
       children: const [
         Dashboard(),
         Music(),
-        Video(),
+        // Video(),
         Internet()
       ],
     );
