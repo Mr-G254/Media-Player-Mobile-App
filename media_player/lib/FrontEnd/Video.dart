@@ -10,7 +10,7 @@ class Video extends StatefulWidget{
   State<Video> createState() => _VideoState();
 }
 
-class _VideoState extends State<Video>{
+class _VideoState extends State<Video> {
   @override
   Widget build(BuildContext context){
     final window = Column(
@@ -67,11 +67,20 @@ class _VideoState extends State<Video>{
             child: ValueListenableBuilder(
                 valueListenable: App.videoDisplay,
                 builder: (context,value,child){
-                  return SingleChildScrollView(
-                    child: Column(
-                      children: value,
-                    ),
+                  return ListView.builder(
+                    padding: EdgeInsets.zero,
+                    itemExtent: 100,
+                    cacheExtent: 15,
+                    itemCount: value.length,
+                    itemBuilder: (context,index){
+                      return value[index];
+                    }
                   );
+                  // return SingleChildScrollView(
+                  //   child: Column(
+                  //     children: value,
+                  //   ),
+                  // );
                 }
             )
         ),
