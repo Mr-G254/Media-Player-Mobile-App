@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:fade_shimmer/fade_shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:highlight_text/highlight_text.dart';
@@ -806,99 +807,141 @@ class _VideoCardState extends State<VideoCard>{
   late Uint8List image;
 
   @override
-  void initState() async{
+  void initState(){
     // TODO: implement initState
     super.initState();
+  }
+
+  Future<void> createThumbnail()async{
     image = await App.videoQuery.getVideoThumbnail(widget.video.path);
   }
 
   @override
   Widget build(BuildContext context){
-    return Container(
-      padding: const EdgeInsets.all(5),
-      child: GestureDetector(
-        child: Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          color: const Color(0xff5C1C14),
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              children: [
-                Expanded(
-                  flex: 9,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: Card(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          child: Image(image: MemoryImage(image),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Container(
-                          padding: const EdgeInsets.only(left: 10),
-                          child: Column(
+    return FutureBuilder(
+        future: createThumbnail(),
+        builder: (context, snapshot){
+          if(snapshot.connectionState == ConnectionState.done){
+            return Container(
+              width: double.infinity,
+              height: 250,
+              padding: const EdgeInsets.only(top: 2.5,bottom: 2.5,right: 5,left: 5),
+              child: GestureDetector(
+                child: Card(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  color: const Color(0xff5C1C14),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          flex: 8,
+                          child: Row(
                             children: [
-                              Text(
-                                "Dur : ${int.parse(widget.video.duration).convertFromTo(TIME.milliseconds,TIME.minutes)}",
-                                style: const TextStyle(
-                                  overflow: TextOverflow.ellipsis,
-                                  fontFamily: "Orelega",
-                                  fontSize: 16,
-                                  color: Colors.white,
+                              Expanded(
+                                flex: 2,
+                                child: Card(
+                                  clipBehavior: Clip.antiAlias,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  child: Image(
+                                    fit: BoxFit.cover,
+                                    image: MemoryImage(image)
+                                  )
                                 ),
                               ),
-                              Text(
-                                "Size : ${int.parse(widget.video.size).convertFromTo(DIGITAL_DATA.byte, DIGITAL_DATA.megabyte)} MB",
-                                style: const TextStyle(
-                                  overflow: TextOverflow.ellipsis,
-                                  fontFamily: "Orelega",
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                ),
-                              ),
+                              Expanded(
+                                  flex: 1,
+                                  child: Container(
+                                    padding: const EdgeInsets.only(left: 10),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          // "Dur : ${int.parse(widget.video.duration).convertFromTo(TIME.milliseconds,TIME.minutes)!.toStringAsFixed(2)}",
+                                          "Dur : ${Duration(milliseconds: int.parse(widget.video.duration)).toString()}",
+                                          style: const TextStyle(
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: "Orelega",
+                                            fontSize: 16,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        Text(
+                                          "Size : ${int.parse(widget.video.size).convertFromTo(DIGITAL_DATA.byte, DIGITAL_DATA.megabyte)!.toStringAsFixed(2)} MB",
+                                          style: const TextStyle(
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: "Orelega",
+                                            fontSize: 16,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                              )
                             ],
                           ),
-                        )
-                      )
-                    ],
-                  ),
-                ),
-                Expanded(
-                    flex: 1,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.only(right: 10),
-                          child: Text(
-                            widget.video.name,
-                            style: const TextStyle(
-                              overflow: TextOverflow.ellipsis,
-                              fontFamily: "Orelega",
-                              fontSize: 16,
-                              color: Colors.white,
-                            ),
-                          ),
                         ),
-                        GestureDetector(
-                          child: const Image(
-                            image: AssetImage("icons/menu.png"),
-                            width: 28,
-                            height: 28,
-                          ),
-                        )
+                        Expanded(
+                            flex: 1,
+                            child: Container(
+                              padding: const EdgeInsets.only(top: 5),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    flex: 9,
+                                    child:Container(
+                                      padding: const EdgeInsets.only(right: 10),
+                                      child: Text(
+                                        widget.video.name,
+                                        style: const TextStyle(
+                                          overflow: TextOverflow.ellipsis,
+                                          fontFamily: "Orelega",
+                                          fontSize: 16,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 1,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(0),
+                                      child: GestureDetector(
+                                        child: const Image(
+                                          image: AssetImage("icons/menu.png"),
+                                          width: 28,
+                                          height: 28,
+                                        ),
+                                      ),
+                                    )
+                                  )
+                                ],
+                              ),
+                            )
+                        ),
                       ],
-                    )
+                    ),
+                  )
                 ),
-              ],
-            ),
-          )
-        ),
-      ),
+              ),
+            );
+
+          }else{
+            return  Container(
+              padding: const EdgeInsets.all(5),
+              child: const FadeShimmer(
+                radius: 10,
+                highlightColor: Color(0xffF9F9FB),
+                baseColor: Color(0xffE6E8EB),
+                width: double.infinity,
+                height: 250,
+              ),
+            );
+          }
+        }
     );
+
   }
 }

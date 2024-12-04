@@ -56,11 +56,17 @@ abstract class App{
 
   static Future<void> initialize()async{
     await AppDatabase.initialize();
-    allVideos = await videoQuery.queryVideos();
 
     await initializeAudioSession();
     await _audioQuery.checkAndRequest(retryRequest: true);
     allSongs = await _audioQuery.querySongs();
+
+    if(Permission.videos.status != PermissionStatus.granted){
+      await Permission.videos.request();
+    }
+    allVideos = await videoQuery.queryVideos();
+    print(allVideos.length);
+
     allSongs = allSongs.where((song) => song.isMusic == true).toList();
 
     allSongs.forEach((val){

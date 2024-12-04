@@ -50,6 +50,7 @@ dependencies:
   audio_session: ^0.1.21
   video_storage_query: ^1.0.0
   units_converter: ^3.0.2
+  fade_shimmer: ^2.2.0
 
 dev_dependencies:
   flutter_test:

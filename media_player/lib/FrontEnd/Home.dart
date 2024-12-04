@@ -120,7 +120,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
       children: const [
         Dashboard(),
         Music(),
-        // Video(),
+        Video(),
         Internet()
       ],
     );
