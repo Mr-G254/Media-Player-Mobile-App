@@ -936,8 +936,9 @@ class _VideoCardState extends State<VideoCard> with AutomaticKeepAliveClientMixi
               padding: const EdgeInsets.all(5),
               child: const FadeShimmer(
                 radius: 10,
-                highlightColor: Color(0xffF9F9FB),
-                baseColor: Color(0xffE6E8EB),
+                highlightColor: Color(0xff5C1C14),
+                baseColor: Color(0xff781F15),
+                millisecondsDelay: 3,
                 width: double.infinity,
                 height: 250,
               ),
