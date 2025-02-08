@@ -66,28 +66,45 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
       }
     });
 
-    App.session.interruptionEventStream.listen((event)async{
-      print(event.type.toString());
-      if(event.begin){
-        print('object');
-        if(event.type == AudioInterruptionType.unknown){
-          // if(App.musicIsPlaying.value){
-          await App.player.pause();
-          App.musicIsPlaying.value = false;
-          // }
-
-          App.updateIsPlayingUI(false);
+    App.session.interruptionEventStream.listen((event) {
+      print(event.type);
+      if (event.begin) {
+        switch (event.type) {
+          case AudioInterruptionType.duck:
+            print('1');
+            App.vol = App.player.volume;
+            App.player.setVolume(0.2);
+            // Another app started playing audio and we should duck.
+            break;
+          case AudioInterruptionType.pause:
+            print('2');
+            if(App.musicIsPlaying.value){
+              App.playOrpause();
+            }
+            break;
+          case AudioInterruptionType.unknown:
+            print('3');
+            if(App.musicIsPlaying.value){
+              App.playOrpause();
+            }
+            // Another app started playing audio and we should pause.
+            break;
         }
-      }else{
-
-        print('object2');
-        if(event.type == AudioInterruptionType.unknown){
-          // if(!App.musicIsPlaying.value){
-          await App.player.resume();
-          App.musicIsPlaying.value = true;
-          // }
-
-          App.updateIsPlayingUI(true);
+      } else {
+        switch (event.type) {
+          case AudioInterruptionType.duck:
+            if(App.vol > 0){
+              App.player.setVolume(App.vol);
+            }
+          // The interruption ended and we should unduck.
+            break;
+          case AudioInterruptionType.pause:
+            App.playOrpause();
+            break;
+          // The interruption ended and we should resume.
+          case AudioInterruptionType.unknown:
+          // The interruption ended but we should not resume.
+            break;
         }
       }
     });

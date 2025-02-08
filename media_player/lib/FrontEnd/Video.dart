@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../BackEnd/App.dart';
 import 'SearchSong.dart';
 
@@ -67,19 +66,20 @@ class _VideoState extends State<Video> {
             child: ValueListenableBuilder(
                 valueListenable: App.videoDisplay,
                 builder: (context,value,child){
-                  return ListView.builder(
-                    padding: EdgeInsets.zero,
-                    itemExtent: 100,
-                    cacheExtent: 15,
-                    itemCount: value.length,
-                    itemBuilder: (context,index){
-                      return value[index];
-                    }
+                  return ListView(
+                    itemExtent: 80,
+                    cacheExtent: double.infinity,
+                    children: value,
                   );
-                  // return SingleChildScrollView(
-                  //   child: Column(
-                  //     children: value,
-                  //   ),
+                  // return ListView.builder(
+                  //   padding: EdgeInsets.zero,
+                  //   itemExtent: 100,
+                  //   cacheExtent: 15,
+                  //   itemCount: value.length,
+                  //   shrinkWrap: true,
+                  //   itemBuilder: (context,index){
+                  //     return value[index];
+                  //   }
                   // );
                 }
             )

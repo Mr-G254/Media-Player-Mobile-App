@@ -1,11 +1,15 @@
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:math';
+import 'dart:ui';
 import 'package:audio_service/audio_service.dart';
 import 'package:appinio_social_share/appinio_social_share.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:media_player/BackEnd/Database.dart';
 import 'package:media_player/BackEnd/Playlist.dart';
 import 'package:media_player/FrontEnd/Components.dart';
@@ -40,6 +44,7 @@ abstract class App{
   static ValueNotifier<List<PlaylistTile>> playlistDisplay= ValueNotifier([]);
 
   static ValueNotifier<List<Widget>> videoDisplay= ValueNotifier([]);
+  static ValueNotifier<List<Widget>> finalVideoDisplay= ValueNotifier([]);
 
   static String currentList = "all";
 
@@ -50,6 +55,7 @@ abstract class App{
   static double songPosition = 0.0;
 
   static double minDisplayHeight = 0;
+  static double vol = 0;
 
   static int loop = 0;
   static bool shuffle= false;
@@ -65,7 +71,6 @@ abstract class App{
       await Permission.videos.request();
     }
     allVideos = await videoQuery.queryVideos();
-    print(allVideos.length);
 
     allSongs = allSongs.where((song) => song.isMusic == true).toList();
 
@@ -113,13 +118,54 @@ abstract class App{
     updateSongUI(currentSong.value);
     updateIsPlayingUI(false);
 
-
-
     for(final i in allVideos){
       videoDisplay.value.add(VideoCard(video: i));
     }
+
+
+    final port = ReceivePort();
+    var rootToken = RootIsolateToken.instance!;
+    await Isolate.spawn(generateThumbnails,[videoDisplay.value,port.sendPort,rootToken]);
+
+    port.listen((message){
+      var index = message[0] as int;
+      var card = videoDisplay.value[index] as VideoCard;
+      var path = card.video.path;
+
+      card.thumbnail.value = message[1];
+
+      // if(index == videoDisplay.value.length -2){
+      //   finalVideoDisplay = videoDisplay;
+      // }
+    });
   }
-  
+
+  static Future<void> generateThumbnails(List<Object> args)async{
+    BackgroundIsolateBinaryMessenger.ensureInitialized(args[2] as RootIsolateToken);
+
+    int index = -1;
+    for(final i in (args[0] as List<Widget>).take(count)){
+      if(i is VideoCard){
+        ++index;
+
+        var img = await App.videoQuery.getVideoThumbnail(i.video.path);
+
+        final dir = await getTemporaryDirectory();
+        final filePath = '${dir.path}/${i.video.path.hashCode}.jpg';
+        final file = File(filePath);
+        await file.writeAsBytes(img);
+        // var compressed = await FlutterImageCompress.compressWithList(
+        //   img,
+        //   minHeight: 90,
+        //   minWidth: 160,
+        //   quality: 70
+        // );
+
+        (args[1] as SendPort).send([index,filePath]);
+      }
+    }
+  }
+
   static void playSong(SongModel song){
     currentSong.value = song;
     currentSongDuration = song.duration;
@@ -423,6 +469,7 @@ abstract class App{
     session = await AudioSession.instance;
     await session.configure(const AudioSessionConfiguration.music());
     await session.setActive(true);
+
   }
 
 }

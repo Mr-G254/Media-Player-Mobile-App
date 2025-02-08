@@ -1,8 +1,6 @@
-import 'dart:typed_data';
-
-import 'package:fade_shimmer/fade_shimmer.dart';
+import 'dart:io';
+import 'dart:isolate';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:highlight_text/highlight_text.dart';
 import 'package:media_player/BackEnd/Database.dart';
 import 'package:media_player/BackEnd/Playlist.dart';
@@ -10,7 +8,6 @@ import 'package:media_player/FrontEnd/NowPlaying.dart';
 import 'package:media_player/FrontEnd/PlaylistSongs.dart';
 import 'package:mini_music_visualizer/mini_music_visualizer.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:units_converter/models/extension_converter.dart';
 import 'package:units_converter/units_converter.dart';
 import 'package:video_storage_query/video_storage_query.dart';
 import '../BackEnd/App.dart';
@@ -795,8 +792,9 @@ class SongOptions extends StatelessWidget{
 
 class VideoCard extends StatefulWidget {
   final VideoItem video;
+  VideoCard({super.key, required this.video});
 
-  const VideoCard({super.key, required this.video});
+  ValueNotifier<String> thumbnail = ValueNotifier('');
 
   @override
   State<VideoCard> createState() => _VideoCardState();
@@ -804,7 +802,6 @@ class VideoCard extends StatefulWidget {
 }
 
 class _VideoCardState extends State<VideoCard> with AutomaticKeepAliveClientMixin{
-  Uint8List image = Uint8List(0);
 
   @override
   void initState(){
@@ -815,136 +812,143 @@ class _VideoCardState extends State<VideoCard> with AutomaticKeepAliveClientMixi
   @override
   bool get wantKeepAlive => true;
 
-  Future<void> createThumbnail()async{
-    if(image.isEmpty){
-      image = await App.videoQuery.getVideoThumbnail(widget.video.path);
-    }
-
-  }
+  // void extractImage(List<Object> args)async{
+  //   var img = await App.videoQuery.getVideoThumbnail(args[0] as String);
+  //   (args[1] as SendPort).send(img);
+  // }
+  //
+  // Future<void> createThumbnail()async{
+  //   final port = ReceivePort();
+  //   await Isolate.spawn(extractImage,[port.sendPort,widget.video.path]);
+  //
+  //   port.listen((message){
+  //     _thumbnail.value = Image(
+  //         fit: BoxFit.cover,
+  //         image: MemoryImage(message)
+  //     );
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context){
-    return FutureBuilder(
-        future: createThumbnail(),
-        builder: (context, snapshot){
-          if(snapshot.connectionState == ConnectionState.done){
-            return Container(
-              width: double.infinity,
-              padding: const EdgeInsets.only(top: 1,bottom: 1,right: 5,left: 5),
-              child: GestureDetector(
-                child: Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  color: const Color(0xff5C1C14),
-                  child: Container(
-                    padding: const EdgeInsets.all(5),
+    super.build(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.only(top: 1,bottom: 1,right: 5,left: 5),
+      child: GestureDetector(
+        child: Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            color: const Color(0xff5C1C14),
+            child: Container(
+              padding: const EdgeInsets.all(5),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 8,
                     child: Row(
                       children: [
                         Expanded(
-                          flex: 8,
-                          child: Row(
-                            children: [
-                              Expanded(
-                                flex: 3,
-                                child: Card(
-                                  clipBehavior: Clip.antiAlias,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                  child: Image(
+                          flex: 3,
+                          child: Card(
+                            color: const Color(0xff510723),
+                            clipBehavior: Clip.antiAlias,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            child: ValueListenableBuilder(
+                              valueListenable: widget.thumbnail,
+                              builder: (context,value,child){
+                                if(value.isEmpty){
+                                  return Container(
+                                    padding: const EdgeInsets.all(10),
+                                    child: const Image(
+                                      image: AssetImage("icons/wave.png"),
+                                      fit: BoxFit.contain,
+                                    ),
+                                  );
+                                }else{
+                                  return Image.file(
+                                    File(value),
                                     fit: BoxFit.cover,
-                                    image: MemoryImage(image)
-                                  )
+                                  );
+                                }
+                              }
+                            )
+                          ),
+                        ),
+                        Expanded(
+                          flex: 7,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.only(left: 5,right: 5,bottom: 10),
+                                child: Text(
+                                  widget.video.name,
+                                  style: const TextStyle(
+                                    overflow: TextOverflow.ellipsis,
+                                    fontFamily: "Orelega",
+                                    fontSize: 17,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
-                              Expanded(
-                                flex: 7,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.only(left: 5,right: 5,bottom: 10),
-                                      child: Text(
-                                        widget.video.name,
-                                        style: const TextStyle(
-                                          overflow: TextOverflow.ellipsis,
-                                          fontFamily: "Orelega",
-                                          fontSize: 17,
-                                          color: Colors.white,
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.only(right: 5,left: 5),
+                                        child: Text(
+                                          // "Dur : ${int.parse(widget.video.duration).convertFromTo(TIME.milliseconds,TIME.minutes)!.toStringAsFixed(2)}",
+                                          "Dur : ${Duration(milliseconds: int.parse(widget.video.duration)).toString().split('.')[0]}",
+                                          style: const TextStyle(
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: "Orelega",
+                                            fontSize: 15,
+                                            color: Colors.white54,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.only(right: 5,left: 5),
-                                              child: Text(
-                                                // "Dur : ${int.parse(widget.video.duration).convertFromTo(TIME.milliseconds,TIME.minutes)!.toStringAsFixed(2)}",
-                                                "Dur : ${Duration(milliseconds: int.parse(widget.video.duration)).toString().split('.')[0]}",
-                                                style: const TextStyle(
-                                                  overflow: TextOverflow.ellipsis,
-                                                  fontFamily: "Orelega",
-                                                  fontSize: 15,
-                                                  color: Colors.white54,
-                                                ),
-                                              ),
-                                            ),
-                                            Container(
-                                              padding: const EdgeInsets.only(right: 5,left: 5),
-                                              child: Text(
-                                                "Size : ${int.parse(widget.video.size).convertFromTo(DIGITAL_DATA.byte, DIGITAL_DATA.megabyte)!.toStringAsFixed(2)} MB",
-                                                style: const TextStyle(
-                                                  overflow: TextOverflow.ellipsis,
-                                                  fontFamily: "Orelega",
-                                                  fontSize: 15,
-                                                  color: Colors.white54,
-                                                ),
-                                              ),
-                                            )
-                                          ],
-                                        ),
-                                        Container(
-                                          padding: const EdgeInsets.all(0),
-                                          child: GestureDetector(
-                                            child: const Image(
-                                              image: AssetImage("icons/menu.png"),
-                                              width: 25,
-                                              height: 25,
-                                            ),
+                                      Container(
+                                        padding: const EdgeInsets.only(right: 5,left: 5),
+                                        child: Text(
+                                          "Size : ${int.parse(widget.video.size).convertFromTo(DIGITAL_DATA.byte, DIGITAL_DATA.megabyte)!.toStringAsFixed(2)} MB",
+                                          style: const TextStyle(
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: "Orelega",
+                                            fontSize: 15,
+                                            color: Colors.white54,
                                           ),
-                                        )
-                                      ],
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.all(0),
+                                    child: GestureDetector(
+                                      child: const Image(
+                                        image: AssetImage("icons/menu.png"),
+                                        width: 25,
+                                        height: 25,
+                                      ),
                                     ),
-                                  ],
-                                ),
+                                  )
+                                ],
                               ),
                             ],
                           ),
                         ),
-
                       ],
                     ),
-                  )
-                ),
-              ),
-            );
+                  ),
 
-          }else{
-            return  Container(
-              padding: const EdgeInsets.all(5),
-              child: const FadeShimmer(
-                radius: 10,
-                highlightColor: Color(0xff5C1C14),
-                baseColor: Color(0xff781F15),
-                millisecondsDelay: 3,
-                width: double.infinity,
-                height: 250,
+                ],
               ),
-            );
-          }
-        }
+            )
+        ),
+      ),
     );
 
   }
