@@ -9,7 +9,6 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:media_player/BackEnd/Database.dart';
 import 'package:media_player/BackEnd/Playlist.dart';
 import 'package:media_player/FrontEnd/Components.dart';
@@ -44,7 +43,7 @@ abstract class App{
   static ValueNotifier<List<PlaylistTile>> playlistDisplay= ValueNotifier([]);
 
   static ValueNotifier<List<Widget>> videoDisplay= ValueNotifier([]);
-  static ValueNotifier<List<Widget>> finalVideoDisplay= ValueNotifier([]);
+  static ValueNotifier<bool> isLoading = ValueNotifier(false);
 
   static String currentList = "all";
 
@@ -122,9 +121,13 @@ abstract class App{
       videoDisplay.value.add(VideoCard(video: i));
     }
 
+    videoDisplay.value.add(SizedBox(height: (minDisplayHeight + 5),));
+
 
     final port = ReceivePort();
     var rootToken = RootIsolateToken.instance!;
+
+    isLoading.value = true;
     await Isolate.spawn(generateThumbnails,[videoDisplay.value,port.sendPort,rootToken]);
 
     port.listen((message){
@@ -134,9 +137,10 @@ abstract class App{
 
       card.thumbnail.value = message[1];
 
-      // if(index == videoDisplay.value.length -2){
-      //   finalVideoDisplay = videoDisplay;
-      // }
+      if(index == videoDisplay.value.length - 2){
+        isLoading.value = false;
+      }
+
     });
   }
 
@@ -144,7 +148,7 @@ abstract class App{
     BackgroundIsolateBinaryMessenger.ensureInitialized(args[2] as RootIsolateToken);
 
     int index = -1;
-    for(final i in (args[0] as List<Widget>).take(count)){
+    for(final i in (args[0] as List<Widget>)){
       if(i is VideoCard){
         ++index;
 
@@ -154,14 +158,10 @@ abstract class App{
         final filePath = '${dir.path}/${i.video.path.hashCode}.jpg';
         final file = File(filePath);
         await file.writeAsBytes(img);
-        // var compressed = await FlutterImageCompress.compressWithList(
-        //   img,
-        //   minHeight: 90,
-        //   minWidth: 160,
-        //   quality: 70
-        // );
 
         (args[1] as SendPort).send([index,filePath]);
+
+        sleep(const Duration(seconds: 1));
       }
     }
   }

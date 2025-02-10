@@ -834,10 +834,10 @@ class _VideoCardState extends State<VideoCard> with AutomaticKeepAliveClientMixi
     super.build(context);
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.only(top: 1,bottom: 1,right: 5,left: 5),
+      padding: const EdgeInsets.only(right: 3,left: 3),
       child: GestureDetector(
         child: Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
             color: const Color(0xff5C1C14),
             child: Container(
               padding: const EdgeInsets.all(5),
@@ -930,8 +930,8 @@ class _VideoCardState extends State<VideoCard> with AutomaticKeepAliveClientMixi
                                     child: GestureDetector(
                                       child: const Image(
                                         image: AssetImage("icons/menu.png"),
-                                        width: 25,
-                                        height: 25,
+                                        width: 20,
+                                        height: 20,
                                       ),
                                     ),
                                   )
