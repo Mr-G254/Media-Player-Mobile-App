@@ -836,6 +836,10 @@ class _VideoCardState extends State<VideoCard> with AutomaticKeepAliveClientMixi
       width: double.infinity,
       padding: const EdgeInsets.only(right: 3,left: 3),
       child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: (){
+          App.playLocalVideo(widget.video.path);
+        },
         child: Card(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
             color: const Color(0xff5C1C14),

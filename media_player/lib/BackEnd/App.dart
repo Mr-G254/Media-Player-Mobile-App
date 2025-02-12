@@ -17,6 +17,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:video_storage_query/video_storage_query.dart';
+import 'package:chewie/chewie.dart';
+import 'package:video_player/video_player.dart';
 
 abstract class App{
   static RouteObserver<ModalRoute> routeObserver = RouteObserver<ModalRoute>();
@@ -58,6 +60,10 @@ abstract class App{
 
   static int loop = 0;
   static bool shuffle= false;
+
+  static VideoPlayerController? videoController;
+  static ValueNotifier<ChewieController?> videoUI = ValueNotifier(null);
+  static ValueNotifier<bool> displayVideo = ValueNotifier(false);
 
   static Future<void> initialize()async{
     await AppDatabase.initialize();
@@ -105,7 +111,6 @@ abstract class App{
       currentSong = ValueNotifier<SongModel>(recentSongs[0]);
     }else{
       currentSong = ValueNotifier<SongModel>(allSongs[0]);
-      addRecent(allSongs[0]);
     }
 
     currentSongList = allSongs;
@@ -142,6 +147,13 @@ abstract class App{
       }
 
     });
+
+    // videoController = VideoPlayerController.file(File(allVideos[0].path));
+    // await videoController.initialize();
+    //
+    // videoUI.value = ChewieController(
+    //   videoPlayerController: videoController,
+    // );
   }
 
   static Future<void> generateThumbnails(List<Object> args)async{
@@ -193,6 +205,9 @@ abstract class App{
       updateIsPlayingUI(true);
     }
 
+    if(!(recentSongs.contains(currentSong.value))){
+      addRecent(currentSong.value);
+    }
   }
 
   static void nextSong(){
@@ -472,4 +487,37 @@ abstract class App{
 
   }
 
+  /*#############################################################################*/
+
+  static void playLocalVideo(String path)async{
+    try{
+      App.videoController?.dispose();
+      App.videoUI.value?.dispose();
+    }catch(e){
+
+    }
+
+    videoController = VideoPlayerController.file(File(path));
+    await videoController?.initialize();
+
+    displayVideo.value = true;
+    videoUI.value = ChewieController(
+      autoInitialize: true,
+      showControlsOnInitialize: true,
+      materialProgressColors: ChewieProgressColors(
+        playedColor: const Color(0xff510723),
+        bufferedColor: const Color(0xFFFFFFFF).withOpacity(0.2),
+        handleColor: const Color(0xFFc8c8c8).withOpacity(1.0),
+        backgroundColor: const Color(0xFFc8c8c8).withOpacity(1.0)
+      ),
+      videoPlayerController: videoController!,
+      autoPlay: true,
+    );
+
+
+  }
+
+  static void hideVideo(){
+    displayVideo.value = false;
+  }
 }

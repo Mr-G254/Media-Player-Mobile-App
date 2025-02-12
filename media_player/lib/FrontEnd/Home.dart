@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
+import 'package:media_player/BackEnd/Database.dart';
 import 'package:media_player/FrontEnd/Dashboard.dart';
 import '../BackEnd/App.dart';
 import 'Internet.dart';
@@ -124,6 +125,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     progressEvent.cancel();
     onEndEvent.cancel();
     App.player.dispose();
+    App.videoController?.dispose();
+    App.videoUI.value?.dispose();
+    AppDatabase.close();
 
     // TODO: implement dispose
     super.dispose();

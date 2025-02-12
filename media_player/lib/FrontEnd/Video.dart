@@ -1,3 +1,5 @@
+import 'package:chewie/chewie.dart';
+import 'package:video_player/video_player.dart';
 import 'package:flutter/material.dart';
 import '../BackEnd/App.dart';
 import 'SearchSong.dart';
@@ -94,17 +96,41 @@ class _VideoState extends State<Video> {
           )
         ),
         Expanded(
-            child: ValueListenableBuilder(
-                valueListenable: App.videoDisplay,
+          child: Column(
+            children: [
+              ValueListenableBuilder(
+                valueListenable: App.displayVideo,
                 builder: (context,value,child){
-                  return ListView(
-                    padding: EdgeInsets.zero,
-                    itemExtent: 85,
-                    cacheExtent: double.infinity,
-                    children: value,
+                  return Visibility(
+                    visible: value,
+                    child: Expanded(
+                      child: ValueListenableBuilder(
+                        valueListenable: App.videoUI,
+                        builder: (context,value,child){
+                          return value != null ? Chewie(controller: value) : SizedBox();
+                        },
+                      ),
+                    )
+
                   );
                 }
-            )
+              ),
+
+              Expanded(
+                child: ValueListenableBuilder(
+                  valueListenable: App.videoDisplay,
+                  builder: (context,value,child){
+                    return ListView(
+                      padding: EdgeInsets.zero,
+                      itemExtent: 85,
+                      cacheExtent: double.infinity,
+                      children: value,
+                    );
+                  }
+                ),
+              )
+            ],
+          )
         ),
       ],
     );

@@ -52,6 +52,8 @@ dependencies:
   units_converter: ^3.0.2
   fade_shimmer: ^2.2.0
   flutter_image_compress: ^2.4.0
+  video_player: ^2.9.2
+  chewie: ^1.8.7
 
 dev_dependencies:
   flutter_test:
