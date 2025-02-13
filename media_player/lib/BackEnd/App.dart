@@ -8,6 +8,7 @@ import 'package:audio_session/audio_session.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_player/BackEnd/Database.dart';
 import 'package:media_player/BackEnd/Playlist.dart';
@@ -17,8 +18,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:video_storage_query/video_storage_query.dart';
-import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
+
+import '../chewie-1.8.7/lib/chewie.dart';
 
 abstract class App{
   static RouteObserver<ModalRoute> routeObserver = RouteObserver<ModalRoute>();
@@ -138,7 +140,6 @@ abstract class App{
     port.listen((message){
       var index = message[0] as int;
       var card = videoDisplay.value[index] as VideoCard;
-      var path = card.video.path;
 
       card.thumbnail.value = message[1];
 
@@ -504,8 +505,29 @@ abstract class App{
     videoUI.value = ChewieController(
       autoInitialize: true,
       showControlsOnInitialize: true,
+      playbackSpeeds: [0.5,1,1.5],
+      additionalOptions: (context){
+        return <OptionItem>[
+          OptionItem(
+            onTap: ()async{
+              await videoUI.value?.pause();
+              displayVideo.value = false;
+              Navigator.pop(context);
+            },
+            iconData: Icons.stop_screen_share,
+            title: 'Close video'
+          ),
+          OptionItem(
+              onTap: ()async{
+
+              },
+              iconData: Icons.delete,
+              title: 'Delete video'
+          )
+        ];
+      },
       materialProgressColors: ChewieProgressColors(
-        playedColor: const Color(0xff510723),
+        playedColor: const Color(0xffE1246B),
         bufferedColor: const Color(0xFFFFFFFF).withOpacity(0.2),
         handleColor: const Color(0xFFc8c8c8).withOpacity(1.0),
         backgroundColor: const Color(0xFFc8c8c8).withOpacity(1.0)

@@ -396,9 +396,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                       );
                     }
                 )).then((onValue){
-                  setState(() {
-                    
-                  });
+                  // setState(() {
+                  //
+                  // });
                 });
               },
             ),

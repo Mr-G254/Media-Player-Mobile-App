@@ -1,7 +1,6 @@
-import 'package:chewie/chewie.dart';
-import 'package:video_player/video_player.dart';
 import 'package:flutter/material.dart';
 import '../BackEnd/App.dart';
+import '../chewie-1.8.7/lib/chewie.dart';
 import 'SearchSong.dart';
 
 class Video extends StatefulWidget{
@@ -104,12 +103,18 @@ class _VideoState extends State<Video> {
                   return Visibility(
                     visible: value,
                     child: Expanded(
-                      child: ValueListenableBuilder(
-                        valueListenable: App.videoUI,
-                        builder: (context,value,child){
-                          return value != null ? Chewie(controller: value) : SizedBox();
-                        },
-                      ),
+                      child: Card(
+                        clipBehavior: Clip.antiAlias,
+                        color: const Color(0xff5C1C14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                        elevation: 20,
+                        child: ValueListenableBuilder(
+                          valueListenable: App.videoUI,
+                          builder: (context,value,child){
+                            return value != null ? Chewie(controller: value) : SizedBox();
+                          },
+                        ),
+                      )
                     )
 
                   );

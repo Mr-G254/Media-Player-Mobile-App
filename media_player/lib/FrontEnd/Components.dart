@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:highlight_text/highlight_text.dart';
 import 'package:media_player/BackEnd/Database.dart';
@@ -811,23 +810,6 @@ class _VideoCardState extends State<VideoCard> with AutomaticKeepAliveClientMixi
 
   @override
   bool get wantKeepAlive => true;
-
-  // void extractImage(List<Object> args)async{
-  //   var img = await App.videoQuery.getVideoThumbnail(args[0] as String);
-  //   (args[1] as SendPort).send(img);
-  // }
-  //
-  // Future<void> createThumbnail()async{
-  //   final port = ReceivePort();
-  //   await Isolate.spawn(extractImage,[port.sendPort,widget.video.path]);
-  //
-  //   port.listen((message){
-  //     _thumbnail.value = Image(
-  //         fit: BoxFit.cover,
-  //         image: MemoryImage(message)
-  //     );
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context){
