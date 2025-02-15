@@ -718,6 +718,14 @@ class SongOptions extends StatelessWidget{
                     ),
                   ),
                 ),
+                onTap: ()async{
+                  Navigator.pop(context);
+                  Playlist? playlst = await Navigator.push(context, DialogRoute(context: context, builder: (context) => AddSongToPlaylist(song: song)));
+
+                  if(playlst != null){
+                    await App.addSongsToPlaylist(playlst.name, [song]);
+                  }
+                },
               ),
             ),
             ListTile(
@@ -780,6 +788,128 @@ class SongOptions extends StatelessWidget{
                     App.deleteSong(song);
                   }
                 },
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class AddSongToPlaylist extends StatefulWidget {
+  final SongModel song;
+
+  AddSongToPlaylist({super.key, required this.song});
+
+  @override
+  State<AddSongToPlaylist> createState() => _AddSongToPlaylistState();
+}
+
+class _AddSongToPlaylistState extends State<AddSongToPlaylist>{
+  List<Playlist> playlists = App.allPlaylist;
+  int currentIndex = -1;
+
+  @override
+  Widget build(BuildContext context){
+    return Container(
+      padding: const EdgeInsets.all(15),
+      child: Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
+        backgroundColor: const Color(0xff781F15),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              child: const Text(
+                'Select a playlist',
+                style: TextStyle(
+                  fontFamily: "Orelega",
+                  fontSize: 20,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.zero,
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemExtent: 50,
+                itemCount: playlists.length,
+                itemBuilder: (context,index){
+                  return ListTile(
+                    selected: currentIndex == index,
+                    selectedTileColor: const Color(0xff510723),
+                    tileColor: const Color(0xff781F15),
+                    title: Text(
+                      playlists[index].name.split('_')[0],
+                      style: const TextStyle(
+                        fontFamily: "Orelega",
+                        fontSize: 18,
+                        color: Colors.white,
+                      ),
+                    ),
+                    onTap: (){
+                      setState(() {
+                        currentIndex = index;
+                      });
+                      Navigator.pop(context,playlists[index]);
+                    },
+                  );
+                }
+              ),
+            ),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.only(right: 10,left: 10,bottom: 5),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xff510723),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))
+                ),
+                onPressed: ()async{
+                  String? name = await Navigator.push(context, DialogRoute(context: context, builder: (context) => const NewPlaylistDialog()));
+
+                  if(name != null){
+                    await App.createPlaylist(name).then((val){
+                      setState(() {
+                        // playlists.add(Playlist(name: '${name}_playlist'));
+                      });
+
+                    });
+                  }
+
+                },
+                child: const Text(
+                  'New playlist',
+                  style: const TextStyle(
+                    fontFamily: "Orelega",
+                    fontSize: 18,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.only(right: 10,left: 10,bottom: 5),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xff510723),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))
+                ),
+                onPressed: (){
+                  Navigator.pop(context);
+                },
+                child: const Text(
+                  'cancel',
+                  style: TextStyle(
+                    fontFamily: "Orelega",
+                    fontSize: 18,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             )
           ],

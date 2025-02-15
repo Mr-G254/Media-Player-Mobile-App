@@ -149,12 +149,6 @@ abstract class App{
 
     });
 
-    // videoController = VideoPlayerController.file(File(allVideos[0].path));
-    // await videoController.initialize();
-    //
-    // videoUI.value = ChewieController(
-    //   videoPlayerController: videoController,
-    // );
   }
 
   static Future<void> generateThumbnails(List<Object> args)async{
@@ -300,9 +294,17 @@ abstract class App{
       if(i.name == playlistName){
         List<String> list = [];
         for(final j in songs){
+          if(i.songs.contains(j.data)){
+            continue;
+          }
+
           list.add(j.data);
         }
-        i.addSongs(list);
+
+        if(list.isNotEmpty){
+          i.addSongs(list);
+        }
+
         break;
       }
     }
