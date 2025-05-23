@@ -395,6 +395,10 @@ abstract class App{
   }
 
   static void deleteSong(SongModel song)async{
+    if(recentSongs.contains(song)){
+      recentSongs.remove(song);
+    }
+
     await AppDatabase.editRecentSongs(recentSongs);
     final plugin = DeviceInfoPlugin();
     final android = await plugin.androidInfo;
@@ -411,7 +415,6 @@ abstract class App{
       }
     }
 
-
     var path = join(getExternalStorageDirectory().toString(),song.data);
     await File(path).delete();
 
@@ -423,7 +426,7 @@ abstract class App{
     recentDisplay.value = [];
     favouriteDisplay.value = [];
 
-    allSongs.forEach((val){
+    for(final val in allSongs){
       if(val.isMusic == true){
         songDisplay.value.add(SongTile(song: val, list: 'all', searchText: '',),);
 
@@ -432,13 +435,14 @@ abstract class App{
           recentDisplay.value.add(SongTile(song: val, list: 'recent', searchText: '',));
         }
 
+
         if(AppDatabase.favouriteSongs.contains(val.data)){
           favouriteSongs.add(val);
           favouriteDisplay.value.add(SongTile(song: val, list: 'favourite', searchText: '',));
         }
       }
 
-    });
+    }
 
     songDisplay.value.add(SizedBox(height: minDisplayHeight));
     recentDisplay.value.add(SizedBox(height: minDisplayHeight));

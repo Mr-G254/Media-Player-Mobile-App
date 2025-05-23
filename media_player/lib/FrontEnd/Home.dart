@@ -17,7 +17,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> with TickerProviderStateMixin{
-  late TabController controller;
+  late PageController controller;
   late StreamSubscription<Duration> progressEvent;
   late StreamSubscription<void> onEndEvent;
   int currentIndex = 0;
@@ -28,12 +28,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     // TODO: implement initState
     super.initState();
 
-    controller = TabController(length: 4, vsync: this,initialIndex: currentIndex,animationDuration: Duration(milliseconds: 500));
-    controller.addListener((){
-      setState(() {
-        currentIndex = controller.index;
-      });
-    });
+    controller = PageController();
 
     progressEvent = App.player.onPositionChanged.listen((dur){
       App.updateProgressUI(dur);
@@ -67,56 +62,56 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
       }
     });
 
-    App.session.interruptionEventStream.listen((event) {
-      print(event.type);
-      if (event.begin) {
-        switch (event.type) {
-          case AudioInterruptionType.duck:
-            print('1');
-            App.vol = App.player.volume;
-            App.player.setVolume(0.2);
-            // Another app started playing audio and we should duck.
-            break;
-          case AudioInterruptionType.pause:
-            print('2');
-            if(App.musicIsPlaying.value){
-              App.playOrpause();
-            }
-            break;
-          case AudioInterruptionType.unknown:
-            print('3');
-            if(App.musicIsPlaying.value){
-              App.playOrpause();
-            }
-            // Another app started playing audio and we should pause.
-            break;
-        }
-      } else {
-        switch (event.type) {
-          case AudioInterruptionType.duck:
-            if(App.vol > 0){
-              App.player.setVolume(App.vol);
-            }
-          // The interruption ended and we should unduck.
-            break;
-          case AudioInterruptionType.pause:
-            App.playOrpause();
-            break;
-          // The interruption ended and we should resume.
-          case AudioInterruptionType.unknown:
-          // The interruption ended but we should not resume.
-            break;
-        }
-      }
-    });
-
-    App.session.becomingNoisyEventStream.listen((_) {
-      print("222222222222");
-      if(App.musicIsPlaying.value){
-        App.playOrpause();
-        App.updateIsPlayingUI(false);
-      }
-    });
+  //   App.session.interruptionEventStream.listen((event) {
+  //     print(event.type);
+  //     if (event.begin) {
+  //       switch (event.type) {
+  //         case AudioInterruptionType.duck:
+  //           print('1');
+  //           App.vol = App.player.volume;
+  //           App.player.setVolume(0.2);
+  //           // Another app started playing audio and we should duck.
+  //           break;
+  //         case AudioInterruptionType.pause:
+  //           print('2');
+  //           if(App.musicIsPlaying.value){
+  //             App.playOrpause();
+  //           }
+  //           break;
+  //         case AudioInterruptionType.unknown:
+  //           print('3');
+  //           if(App.musicIsPlaying.value){
+  //             App.playOrpause();
+  //           }
+  //           // Another app started playing audio and we should pause.
+  //           break;
+  //       }
+  //     } else {
+  //       switch (event.type) {
+  //         case AudioInterruptionType.duck:
+  //           if(App.vol > 0){
+  //             App.player.setVolume(App.vol);
+  //           }
+  //         // The interruption ended and we should unduck.
+  //           break;
+  //         case AudioInterruptionType.pause:
+  //           App.playOrpause();
+  //           break;
+  //         // The interruption ended and we should resume.
+  //         case AudioInterruptionType.unknown:
+  //         // The interruption ended but we should not resume.
+  //           break;
+  //       }
+  //     }
+  //   });
+  //
+  //   App.session.becomingNoisyEventStream.listen((_) {
+  //     print("222222222222");
+  //     if(App.musicIsPlaying.value){
+  //       App.playOrpause();
+  //       App.updateIsPlayingUI(false);
+  //     }
+  //   });
   }
 
   @override
@@ -136,7 +131,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
 
   @override
   Widget build(BuildContext context){
-    final tabs = TabBarView(
+    final tabs = PageView(
       controller: controller,
       children: const [
         Dashboard(),
@@ -307,7 +302,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                   ),
                 ),
                 onTap: (){
-                  controller.animateTo(0);
+                  controller.animateToPage(0, duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
                   setState(() {
                     currentIndex = 0;
                   });
@@ -325,7 +320,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                   ),
                 ),
                 onTap: (){
-                  controller.animateTo(1);
+                  controller.animateToPage(1, duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
                   setState(() {
                     currentIndex = 1;
                   });
@@ -342,7 +337,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                   ),
                 ),
                 onTap: (){
-                  controller.animateTo(2);
+                  controller.animateToPage(2, duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
                   setState(() {
                     currentIndex = 2;
                   });
@@ -359,7 +354,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                   ),
                 ),
                 onTap: (){
-                  controller.animateTo(3);
+                  controller.animateToPage(3, duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
                   setState(() {
                     currentIndex = 3;
                   });

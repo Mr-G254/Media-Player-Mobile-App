@@ -64,6 +64,7 @@ class _SplashscreenState extends State<Splashscreen>{
     );
 
     return const Scaffold(
+      extendBodyBehindAppBar: true,
       backgroundColor: Color(0xff510723),
       body: Center(
         child: window,

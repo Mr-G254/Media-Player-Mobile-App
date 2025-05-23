@@ -77,10 +77,12 @@ abstract class AppDatabase{
   }
 
   static Future<void> editRecentSongs(List<SongModel> songs)async{
-    db.execute('DROP TABLE IF EXISTS Recent');
+    await db.execute('DROP TABLE IF EXISTS Recent');
     await db.execute('CREATE TABLE Recent (id INTEGER PRIMARY KEY, path TEXT)');
 
+    recentSongs.clear();
     for(final i in songs){
+      recentSongs.add(i.data);
       await db.insert('Recent', {'path' : i.data});
     }
 

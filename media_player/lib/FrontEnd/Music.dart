@@ -9,7 +9,9 @@ class Music extends StatefulWidget{
   State<Music> createState() => _MusicState();
 }
 
-class _MusicState extends State<Music>{
+class _MusicState extends State<Music> with AutomaticKeepAliveClientMixin{
+  @override
+  bool get wantKeepAlive => true;
 
   final searchText = TextEditingController();
   String label = "Search";

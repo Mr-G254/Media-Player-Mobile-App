@@ -1,10 +1,18 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'BackEnd/App.dart';
 import 'BackEnd/AudioHandler.dart';
 import 'FrontEnd/Splashscreen.dart';
 
 Future<void> main() async {
+  final mySystemTheme= SystemUiOverlayStyle.light
+      .copyWith(
+      systemNavigationBarColor: Colors.transparent,
+  );
+
+  SystemChrome.setSystemUIOverlayStyle(mySystemTheme);
+
    App.audioHandler = await AudioService.init(
     builder: () => AppAudioHandler(),
     config: const AudioServiceConfig(

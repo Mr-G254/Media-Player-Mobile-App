@@ -1,0 +1,2 @@
+C:/Users/gikuh/Downloads/Projects/Dart/Media-Player-Mobile-App/media_player/android/app/.cxx/Debug/50593q3p/x86/CMakeFiles/edit_cache.dir
+C:/Users/gikuh/Downloads/Projects/Dart/Media-Player-Mobile-App/media_player/android/app/.cxx/Debug/50593q3p/x86/CMakeFiles/rebuild_cache.dir
