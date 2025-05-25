@@ -8,6 +8,7 @@ import 'package:audio_session/audio_session.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_player/BackEnd/Database.dart';
@@ -19,6 +20,7 @@ import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:video_storage_query/video_storage_query.dart';
 import 'package:video_player/video_player.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 import '../chewie-1.8.7/lib/chewie.dart';
 
@@ -129,12 +131,13 @@ abstract class App{
     }
 
     videoDisplay.value.add(SizedBox(height: (minDisplayHeight + 5),));
-
+    // videoProcessing();
 
     final port = ReceivePort();
     var rootToken = RootIsolateToken.instance!;
 
     isLoading.value = true;
+
     await Isolate.spawn(generateThumbnails,[videoDisplay.value,port.sendPort,rootToken]);
 
     port.listen((message){
@@ -159,14 +162,9 @@ abstract class App{
       if(i is VideoCard){
         ++index;
 
-        var img = await App.videoQuery.getVideoThumbnail(i.video.path);
+        var img = await VideoThumbnail.thumbnailData(video: i.video.path,quality: 5);
 
-        final dir = await getTemporaryDirectory();
-        final filePath = '${dir.path}/${i.video.path.hashCode}.jpg';
-        final file = File(filePath);
-        await file.writeAsBytes(img);
-
-        (args[1] as SendPort).send([index,filePath]);
+        (args[1] as SendPort).send([index,img]);
 
         sleep(const Duration(seconds: 1));
       }
@@ -395,11 +393,18 @@ abstract class App{
   }
 
   static void deleteSong(SongModel song)async{
+    allSongs.remove(song);
+
     if(recentSongs.contains(song)){
       recentSongs.remove(song);
+      AppDatabase.editRecentSongs(recentSongs);
     }
 
-    await AppDatabase.editRecentSongs(recentSongs);
+    if(favouriteSongs.contains(song)){
+      favouriteSongs.remove(song);
+      deleteFavourite(song);
+    }
+
     final plugin = DeviceInfoPlugin();
     final android = await plugin.androidInfo;
 
@@ -418,35 +423,26 @@ abstract class App{
     var path = join(getExternalStorageDirectory().toString(),song.data);
     await File(path).delete();
 
-    allSongs = await _audioQuery.querySongs();
 
-    recentSongs.clear();
-    favouriteSongs.clear();
     songDisplay.value = [];
     recentDisplay.value = [];
     favouriteDisplay.value = [];
 
     for(final val in allSongs){
-      if(val.isMusic == true){
-        songDisplay.value.add(SongTile(song: val, list: 'all', searchText: '',),);
+      songDisplay.value.add(SongTile(song: val, list: 'all', searchText: '',),);
+    }
 
-        if(AppDatabase.recentSongs.contains(val.data)){
-          recentSongs.add(val);
-          recentDisplay.value.add(SongTile(song: val, list: 'recent', searchText: '',));
-        }
+    for(final val in favouriteSongs){
+      favouriteDisplay.value.add(SongTile(song: val, list: 'favourite', searchText: '',),);
+    }
 
-
-        if(AppDatabase.favouriteSongs.contains(val.data)){
-          favouriteSongs.add(val);
-          favouriteDisplay.value.add(SongTile(song: val, list: 'favourite', searchText: '',));
-        }
-      }
-
+    for(final i in recentSongs){
+      recentDisplay.value.add(SongTile(song: i, list: 'recent', searchText: '',));
     }
 
     songDisplay.value.add(SizedBox(height: minDisplayHeight));
     recentDisplay.value.add(SizedBox(height: minDisplayHeight));
-
+    favouriteDisplay.value.add(SizedBox(height: minDisplayHeight));
   }
 
   static Future<void> shareSong(SongModel song)async{
@@ -541,7 +537,6 @@ abstract class App{
       videoPlayerController: videoController!,
       autoPlay: true,
     );
-
 
   }
 

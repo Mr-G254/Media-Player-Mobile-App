@@ -24,6 +24,7 @@ Future<void> main() async {
   );
 
   runApp(MaterialApp(
+    debugShowCheckedModeBanner: false,
     home: const Splashscreen(),
     navigatorObservers: [App.routeObserver],
     theme: ThemeData(

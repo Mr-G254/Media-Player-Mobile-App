@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:highlight_text/highlight_text.dart';
 import 'package:media_player/BackEnd/Database.dart';
@@ -144,15 +145,15 @@ class SongTile extends StatelessWidget {
               App.currentSongList = App.allSongs;
             }
 
-            Navigator.push(context, PageRouteBuilder(
-                pageBuilder: (context,animation,secondaryAnimation) =>NowPlaying(song: song),
-                transitionsBuilder: (context,animation,secondaryAnimation,child){
-                  return SlideTransition(
-                    position: animation.drive(Tween(begin: const Offset(0, 1),end: const Offset(0, 0)).chain(CurveTween(curve: Curves.easeOut))),
-                    child: child,
-                  );
-                }
-            ));
+            // Navigator.push(context, PageRouteBuilder(
+            //     pageBuilder: (context,animation,secondaryAnimation) =>NowPlaying(song: song),
+            //     transitionsBuilder: (context,animation,secondaryAnimation,child){
+            //       return SlideTransition(
+            //         position: animation.drive(Tween(begin: const Offset(0, 1),end: const Offset(0, 0)).chain(CurveTween(curve: Curves.easeOut))),
+            //         child: child,
+            //       );
+            //     }
+            // ));
           },
         );
       }
@@ -923,7 +924,7 @@ class VideoCard extends StatefulWidget {
   final VideoItem video;
   VideoCard({super.key, required this.video});
 
-  ValueNotifier<String> thumbnail = ValueNotifier('');
+  ValueNotifier<Uint8List?> thumbnail = ValueNotifier(null);
 
   @override
   State<VideoCard> createState() => _VideoCardState();
@@ -950,6 +951,10 @@ class _VideoCardState extends State<VideoCard> with AutomaticKeepAliveClientMixi
       child: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: (){
+          if(App.musicIsPlaying.value){
+            App.playOrpause();
+          }
+
           App.playLocalVideo(widget.video.path);
         },
         child: Card(
@@ -972,7 +977,7 @@ class _VideoCardState extends State<VideoCard> with AutomaticKeepAliveClientMixi
                             child: ValueListenableBuilder(
                               valueListenable: widget.thumbnail,
                               builder: (context,value,child){
-                                if(value.isEmpty){
+                                if(value == null){
                                   return Container(
                                     padding: const EdgeInsets.all(10),
                                     child: const Image(
@@ -981,10 +986,11 @@ class _VideoCardState extends State<VideoCard> with AutomaticKeepAliveClientMixi
                                     ),
                                   );
                                 }else{
-                                  return Image.file(
-                                    File(value),
+                                  return Image(
+                                    image: MemoryImage(value),
                                     fit: BoxFit.cover,
                                   );
+
                                 }
                               }
                             )
