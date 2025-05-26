@@ -12,9 +12,12 @@ class Dashboard extends StatefulWidget{
   State<Dashboard> createState() => _DashboardState();
 }
 
-class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
+class _DashboardState extends State<Dashboard> with TickerProviderStateMixin,AutomaticKeepAliveClientMixin{
   int currentIndex = 0;
   late TabController controller;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
