@@ -29,6 +29,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
     super.initState();
 
     controller = PageController();
+    controller.addListener((){
+      setState(() {
+        currentIndex = controller.page!.round();
+      });
+    });
 
     progressEvent = App.player.onPositionChanged.listen((dur){
       App.updateProgressUI(dur);

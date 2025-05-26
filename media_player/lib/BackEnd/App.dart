@@ -131,7 +131,6 @@ abstract class App{
     }
 
     videoDisplay.value.add(SizedBox(height: (minDisplayHeight + 5),));
-    // videoProcessing();
 
     final port = ReceivePort();
     var rootToken = RootIsolateToken.instance!;
@@ -162,11 +161,11 @@ abstract class App{
       if(i is VideoCard){
         ++index;
 
-        var img = await VideoThumbnail.thumbnailData(video: i.video.path,quality: 5);
+        var img = await VideoThumbnail.thumbnailData(video: i.video.path,quality: 3);
 
         (args[1] as SendPort).send([index,img]);
 
-        sleep(const Duration(seconds: 1));
+        // sleep(const Duration(seconds: 1));
       }
     }
   }
