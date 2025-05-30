@@ -145,15 +145,18 @@ class SongTile extends StatelessWidget {
               App.currentSongList = App.allSongs;
             }
 
-            // Navigator.push(context, PageRouteBuilder(
-            //     pageBuilder: (context,animation,secondaryAnimation) =>NowPlaying(song: song),
-            //     transitionsBuilder: (context,animation,secondaryAnimation,child){
-            //       return SlideTransition(
-            //         position: animation.drive(Tween(begin: const Offset(0, 1),end: const Offset(0, 0)).chain(CurveTween(curve: Curves.easeOut))),
-            //         child: child,
-            //       );
-            //     }
-            // ));
+            if(list == 'playlist'){
+              Navigator.push(context, PageRouteBuilder(
+                pageBuilder: (context,animation,secondaryAnimation) =>NowPlaying(song: song),
+                transitionsBuilder: (context,animation,secondaryAnimation,child){
+                  return SlideTransition(
+                    position: animation.drive(Tween(begin: const Offset(0, 1),end: const Offset(0, 0)).chain(CurveTween(curve: Curves.easeOut))),
+                    child: child,
+                  );
+                }
+              ));
+            }
+
           },
         );
       }
