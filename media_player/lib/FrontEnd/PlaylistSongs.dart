@@ -107,7 +107,7 @@ class _PlaylistSongsState extends State<PlaylistSongs> with RouteAware{
     for(final i in selectedSongs){
       songs.add(i);
       currentPlaylist.songs.add(i.data);
-      songWidget.add(SongTile(song: i, list: 'playlist', searchText: '',));
+      songWidget.add(SongTile(song: i, list: 'playlist',playlistName: widget.playlist.name, searchText: '',));
     }
     
     await App.addSongsToPlaylist(widget.playlist.name, selectedSongs).then((val){

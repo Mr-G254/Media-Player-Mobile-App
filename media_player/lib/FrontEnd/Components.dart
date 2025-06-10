@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:highlight_text/highlight_text.dart';
@@ -145,7 +144,7 @@ class SongTile extends StatelessWidget {
               App.currentSongList = App.allSongs;
             }
 
-            if(list == 'playlist'){
+            if(list == 'playlist' || list == 'none'){
               Navigator.push(context, PageRouteBuilder(
                 pageBuilder: (context,animation,secondaryAnimation) =>NowPlaying(song: song),
                 transitionsBuilder: (context,animation,secondaryAnimation,child){
@@ -156,7 +155,6 @@ class SongTile extends StatelessWidget {
                 }
               ));
             }
-
           },
         );
       }
@@ -746,7 +744,7 @@ class SongOptions extends StatelessWidget{
                 ),
               ),
               onTap: ()async{
-                await App.shareSong(song).then((onValue){
+                await App.shareMedia(song.title,song.data).then((onValue){
                   Navigator.pop(context);
                 });
               },
@@ -925,7 +923,9 @@ class _AddSongToPlaylistState extends State<AddSongToPlaylist>{
 
 class VideoCard extends StatefulWidget {
   final VideoItem video;
-  VideoCard({super.key, required this.video});
+  final String searchText;
+  final Uint8List? processedThumbnail;
+  VideoCard({super.key, required this.video,required this.searchText,this.processedThumbnail});
 
   ValueNotifier<Uint8List?> thumbnail = ValueNotifier(null);
 
@@ -935,11 +935,23 @@ class VideoCard extends StatefulWidget {
 }
 
 class _VideoCardState extends State<VideoCard> with AutomaticKeepAliveClientMixin{
+  late Map<String, HighlightedWord> words;
 
   @override
   void initState(){
     // TODO: implement initState
     super.initState();
+
+    words = {
+      widget.searchText : HighlightedWord(
+        textStyle: const TextStyle(
+            fontFamily: "Orelega",
+            fontSize: 18,
+            color: Color(0xffE1246B),
+            overflow: TextOverflow.ellipsis
+        ),
+      )
+    };
   }
 
   @override
@@ -958,28 +970,34 @@ class _VideoCardState extends State<VideoCard> with AutomaticKeepAliveClientMixi
             App.playOrpause();
           }
 
-          App.playLocalVideo(widget.video.path);
+          App.playLocalVideo(widget.video.path,widget.video.name,fullScreen: widget.searchText.isEmpty ? false : true);
         },
         child: Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
-            color: const Color(0xff5C1C14),
-            child: Container(
-              padding: const EdgeInsets.all(5),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 8,
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: Card(
-                            color: const Color(0xff510723),
-                            clipBehavior: Clip.antiAlias,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            child: ValueListenableBuilder(
-                              valueListenable: widget.thumbnail,
-                              builder: (context,value,child){
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
+          color: const Color(0xff5C1C14),
+          child: Container(
+            padding: const EdgeInsets.all(5),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 8,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: Card(
+                          color: const Color(0xff510723),
+                          clipBehavior: Clip.antiAlias,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          child: ValueListenableBuilder(
+                            valueListenable: widget.thumbnail,
+                            builder: (context,value,child){
+                              if(widget.processedThumbnail != null){
+                                return Image(
+                                  image: MemoryImage(widget.processedThumbnail!),
+                                  fit: BoxFit.cover,
+                                );
+                              }else{
                                 if(value == null){
                                   return Container(
                                     padding: const EdgeInsets.all(10),
@@ -996,61 +1014,65 @@ class _VideoCardState extends State<VideoCard> with AutomaticKeepAliveClientMixi
 
                                 }
                               }
-                            )
-                          ),
+                            }
+                          )
                         ),
-                        Expanded(
-                          flex: 7,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.only(left: 5,right: 5,bottom: 10),
-                                child: Text(
-                                  widget.video.name,
-                                  style: const TextStyle(
-                                    overflow: TextOverflow.ellipsis,
-                                    fontFamily: "Orelega",
-                                    fontSize: 17,
-                                    color: Colors.white,
-                                  ),
+                      ),
+                      Expanded(
+                        flex: 7,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.only(left: 5,right: 5,bottom: 10),
+                              child: TextHighlight(
+                                text: widget.video.name,
+                                words: words,
+                                overflow: TextOverflow.ellipsis,
+                                textStyle: const TextStyle(
+                                  fontFamily: "Orelega",
+                                  fontSize: 18,
+                                  color: Colors.white,
                                 ),
                               ),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.only(right: 5,left: 5),
-                                        child: Text(
-                                          // "Dur : ${int.parse(widget.video.duration).convertFromTo(TIME.milliseconds,TIME.minutes)!.toStringAsFixed(2)}",
-                                          "Dur : ${Duration(milliseconds: int.parse(widget.video.duration)).toString().split('.')[0]}",
-                                          style: const TextStyle(
-                                            overflow: TextOverflow.ellipsis,
-                                            fontFamily: "Orelega",
-                                            fontSize: 15,
-                                            color: Colors.white54,
-                                          ),
+                            ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.only(right: 5,left: 5),
+                                      child: Text(
+                                        // "Dur : ${int.parse(widget.video.duration).convertFromTo(TIME.milliseconds,TIME.minutes)!.toStringAsFixed(2)}",
+                                        "Dur : ${Duration(milliseconds: int.parse(widget.video.duration)).toString().split('.')[0]}",
+                                        style: const TextStyle(
+                                          overflow: TextOverflow.ellipsis,
+                                          fontFamily: "Orelega",
+                                          fontSize: 15,
+                                          color: Colors.white54,
                                         ),
                                       ),
-                                      Container(
-                                        padding: const EdgeInsets.only(right: 5,left: 5),
-                                        child: Text(
-                                          "Size : ${int.parse(widget.video.size).convertFromTo(DIGITAL_DATA.byte, DIGITAL_DATA.megabyte)!.toStringAsFixed(2)} MB",
-                                          style: const TextStyle(
-                                            overflow: TextOverflow.ellipsis,
-                                            fontFamily: "Orelega",
-                                            fontSize: 15,
-                                            color: Colors.white54,
-                                          ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.only(right: 5,left: 5),
+                                      child: Text(
+                                        "Size : ${int.parse(widget.video.size).convertFromTo(DIGITAL_DATA.byte, DIGITAL_DATA.megabyte)!.toStringAsFixed(2)} MB",
+                                        style: const TextStyle(
+                                          overflow: TextOverflow.ellipsis,
+                                          fontFamily: "Orelega",
+                                          fontSize: 15,
+                                          color: Colors.white54,
                                         ),
-                                      )
-                                    ],
-                                  ),
-                                  Container(
+                                      ),
+                                    )
+                                  ],
+                                ),
+                                Visibility(
+                                  visible: widget.searchText.isEmpty,
+                                  child: Container(
                                     padding: const EdgeInsets.all(0),
                                     child: GestureDetector(
                                       child: const Image(
@@ -1059,19 +1081,19 @@ class _VideoCardState extends State<VideoCard> with AutomaticKeepAliveClientMixi
                                         height: 20,
                                       ),
                                     ),
-                                  )
-                                ],
-                              ),
-                            ],
-                          ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-
-                ],
-              ),
-            )
+                ),
+              ],
+            ),
+          )
         ),
       ),
     );

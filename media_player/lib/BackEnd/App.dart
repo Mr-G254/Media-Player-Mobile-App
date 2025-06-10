@@ -127,7 +127,7 @@ abstract class App{
     updateIsPlayingUI(false);
 
     for(final i in allVideos){
-      videoDisplay.value.add(VideoCard(video: i));
+      videoDisplay.value.add(VideoCard(video: i, searchText: '',));
     }
 
     videoDisplay.value.add(SizedBox(height: (minDisplayHeight + 5),));
@@ -165,7 +165,6 @@ abstract class App{
 
         (args[1] as SendPort).send([index,img]);
 
-        // sleep(const Duration(seconds: 1));
       }
     }
   }
@@ -191,6 +190,7 @@ abstract class App{
       player.pause();
       musicIsPlaying.value = false;
       updateIsPlayingUI(false);
+
     }else{
       player.resume();
       musicIsPlaying.value = true;
@@ -309,11 +309,15 @@ abstract class App{
   }
 
   static Future<void> removeSongFromPlaylist(String playlistName,SongModel song)async{
+    var index = 0;
     for(final i in allPlaylist){
       if(i.name == playlistName){
-        i.removeSongs([song.data]);
+        break;
       }
+      ++index;
     }
+
+    App.allPlaylist[index].removeSongs([song.data]);
     await AppDatabase.deletePlaylistSong(playlistName, song);
   }
 
@@ -444,8 +448,8 @@ abstract class App{
     favouriteDisplay.value.add(SizedBox(height: minDisplayHeight));
   }
 
-  static Future<void> shareSong(SongModel song)async{
-    await AppinioSocialShare().android.shareFilesToSystem(song.title, [song.data]);
+  static Future<void> shareMedia(String mediaTitle,String mediaPath)async{
+    await AppinioSocialShare().android.shareFilesToSystem(mediaTitle, [mediaPath]);
   }
   
   static void updateSongUI(SongModel song){
@@ -491,7 +495,7 @@ abstract class App{
 
   /*#############################################################################*/
 
-  static void playLocalVideo(String path)async{
+  static void playLocalVideo(String path,String title,{bool fullScreen = false})async{
     try{
       App.videoController?.dispose();
       App.videoUI.value?.dispose();
@@ -504,11 +508,19 @@ abstract class App{
 
     displayVideo.value = true;
     videoUI.value = ChewieController(
+      fullScreenByDefault: fullScreen,
       autoInitialize: true,
       showControlsOnInitialize: true,
       playbackSpeeds: [0.5,1,1.5],
       additionalOptions: (context){
         return <OptionItem>[
+          OptionItem(
+            onTap: (){
+              shareMedia(title, path);
+            },
+            iconData: Icons.share,
+            title: 'Share video'
+          ),
           OptionItem(
             onTap: ()async{
               await videoUI.value?.pause();

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:media_player/FrontEnd/SearchSong.dart';
+import 'package:media_player/FrontEnd/SearchMedia.dart';
 import '../BackEnd/App.dart';
 
 class Music extends StatefulWidget{
@@ -65,7 +65,7 @@ class _MusicState extends State<Music> with AutomaticKeepAliveClientMixin{
                   ),
                 ),
               ),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const Searchsong())),
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SearchMedia(mediaType: 'song',))),
             )
           ),
         ),

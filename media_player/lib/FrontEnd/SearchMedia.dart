@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:media_player/BackEnd/App.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-
 import 'Components.dart';
 
-class Searchsong extends StatefulWidget{
-  const Searchsong({super.key});
+class SearchMedia extends StatefulWidget{
+  final String mediaType;
+  const SearchMedia({super.key,required this.mediaType});
 
   @override
-  State<Searchsong> createState() => _SearchSongState();
+  State<SearchMedia> createState() => _SearchMediaState();
 }
 
-class _SearchSongState extends State<Searchsong>{
+class _SearchMediaState extends State<SearchMedia>{
   final searchText = TextEditingController();
-  List<SongTile> widgets = [];
+  List<Widget> widgets = [];
 
   @override
   void initState() {
@@ -23,18 +23,43 @@ class _SearchSongState extends State<Searchsong>{
 
       if(searchText.text.isEmpty){
         setState(() {
-          widgets.clear();
+          widgets = [];
         });
       }else{
-        List<SongModel> songList = App.allSongs.where((song) => song.title.toLowerCase().contains(searchText.text.toLowerCase())).toList();
+        if(widget.mediaType == "song") {
+          List<SongModel> songList = App.allSongs
+              .where((song) =>
+              song.title.toLowerCase().contains(searchText.text.toLowerCase()))
+              .toList();
 
-        List<SongTile> tile = [];
-        for(final i in songList){
-          tile.add(SongTile(song: i, list: 'none', searchText: searchText.text,));
+          List<Widget> tile = [];
+          for (final i in songList) {
+            tile.add(SongTile(song: i, list: 'none', searchText: searchText.text,));
+          }
+
+          setState(() {
+            widgets = tile;
+          });
+
+        }else if(widget.mediaType == 'video'){
+          List<Widget> vidList = [];
+
+          for(final i in App.videoDisplay.value){
+            try{
+              final vid = i as VideoCard;
+
+              if(vid.video.name.toLowerCase().contains(searchText.text.toLowerCase())){
+                vidList.add(VideoCard(video: vid.video, searchText: searchText.text,processedThumbnail: vid.thumbnail.value,));
+              }
+            }catch(e){
+
+            }
+          }
+
+          setState(() {
+            widgets = vidList;
+          });
         }
-        setState(() {
-          widgets = tile;
-        });
       }
 
     });
@@ -99,16 +124,18 @@ class _SearchSongState extends State<Searchsong>{
       ),
     );
 
-    final window = Column(
-      children: widgets
+    final window = Container(
+      padding: const EdgeInsets.all(0),
+      child: ListView(
+        itemExtent: widget.mediaType == "song"? null : 80,
+        children: widgets,
+      ),
     );
 
     return Scaffold(
       appBar: bar,
       backgroundColor: const Color(0xff781F15),
-      body: SingleChildScrollView(
-        child: window,
-      ),
+      body: window
     );
   }
 

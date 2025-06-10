@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../BackEnd/App.dart';
 import '../chewie-1.8.7/lib/chewie.dart';
-import 'SearchSong.dart';
+import 'SearchMedia.dart';
 
 class Video extends StatefulWidget{
   const Video({super.key});
@@ -66,7 +66,7 @@ class _VideoState extends State<Video> {
                             ),
                           ),
                         ),
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const Searchsong())),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SearchMedia(mediaType: 'video',))),
                       )
                   ),
                 ),

@@ -7,8 +7,8 @@ class Playlist{
     songs.addAll(newSongs);
   }
 
-  void removeSongs(List<String> songs){
-    for(final i in songs){
+  void removeSongs(List<String> removsongs){
+    for(final i in removsongs){
       songs.remove(i);
     }
   }
