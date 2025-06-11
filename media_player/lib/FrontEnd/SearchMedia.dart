@@ -13,7 +13,7 @@ class SearchMedia extends StatefulWidget{
 
 class _SearchMediaState extends State<SearchMedia>{
   final searchText = TextEditingController();
-  List<Widget> widgets = [];
+  ValueNotifier<List<Widget>> widgets = ValueNotifier([]);
 
   @override
   void initState() {
@@ -21,46 +21,7 @@ class _SearchMediaState extends State<SearchMedia>{
     super.initState();
     searchText.addListener((){
 
-      if(searchText.text.isEmpty){
-        setState(() {
-          widgets = [];
-        });
-      }else{
-        if(widget.mediaType == "song") {
-          List<SongModel> songList = App.allSongs
-              .where((song) =>
-              song.title.toLowerCase().contains(searchText.text.toLowerCase()))
-              .toList();
-
-          List<Widget> tile = [];
-          for (final i in songList) {
-            tile.add(SongTile(song: i, list: 'none', searchText: searchText.text,));
-          }
-
-          setState(() {
-            widgets = tile;
-          });
-
-        }else if(widget.mediaType == 'video'){
-          List<Widget> vidList = [];
-
-          for(final i in App.videoDisplay.value){
-            try{
-              final vid = i as VideoCard;
-
-              if(vid.video.name.toLowerCase().contains(searchText.text.toLowerCase())){
-                vidList.add(VideoCard(video: vid.video, searchText: searchText.text,processedThumbnail: vid.thumbnail.value,));
-              }
-            }catch(e){
-
-            }
-          }
-
-          setState(() {
-            widgets = vidList;
-          });
-        }
-      }
+      App.searchMedia(searchText.text, widget.mediaType);
 
     });
   }
@@ -126,10 +87,15 @@ class _SearchMediaState extends State<SearchMedia>{
 
     final window = Container(
       padding: const EdgeInsets.all(0),
-      child: ListView(
-        itemExtent: widget.mediaType == "song"? null : 80,
-        children: widgets,
-      ),
+      child: ValueListenableBuilder(
+        valueListenable: App.searchWidgets,
+        builder: (context,value,child){
+          return ListView(
+            itemExtent: widget.mediaType == "song"? null : 80,
+            children: value,
+          );
+        }
+      )
     );
 
     return Scaffold(

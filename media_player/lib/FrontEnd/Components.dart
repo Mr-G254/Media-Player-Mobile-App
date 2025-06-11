@@ -423,7 +423,7 @@ class AskDelete extends StatelessWidget {
             Container(
               padding: const EdgeInsets.only(right: 15,left: 15),
               child: Text(
-                "Are you sure you want to delete this ${isSong ? 'song': 'playlist'}?",
+                "Are you sure you want to delete this ${isSong ? 'media': 'playlist'}?",
                 style: const TextStyle(
                   fontFamily: "Orelega",
                   fontSize: 20,
@@ -799,6 +799,87 @@ class SongOptions extends StatelessWidget{
   }
 }
 
+class VideoOptions extends StatelessWidget{
+  final String videoTitle;
+  final String videoPath;
+  const VideoOptions({super.key,required this.videoTitle,required this.videoPath});
+
+  Widget build(BuildContext context){
+    return Container(
+      padding: EdgeInsets.all(0),
+      child: Dialog(
+        backgroundColor: const Color(0xff781F15),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              width: MediaQuery.of(context).size.width*(2/3),
+              child: Text(
+                videoTitle,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontFamily: "Orelega",
+                  fontSize: 20,
+                  color: Color(0xffE1246B),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+            ListTile(
+              tileColor: Colors.transparent,
+              title: Container(
+                padding: const EdgeInsets.only(top: 15,bottom: 5),
+                child: const Text(
+                  'Share',
+                  style: TextStyle(
+                    fontFamily: "Orelega",
+                    fontSize: 18,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              onTap: ()async{
+                await App.shareMedia(videoTitle,videoPath).then((onValue){
+                  Navigator.pop(context);
+                });
+              },
+            ),
+            ListTile(
+              tileColor: Colors.transparent,
+              title: Container(
+                padding: const EdgeInsets.only(top: 15,bottom: 5),
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(
+                    fontFamily: "Orelega",
+                    fontSize: 18,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              onTap: ()async{
+                Navigator.pop(context);
+                // if(App.currentVideo.value == videoTitle){
+                //   App.videoUI.value?.pause();
+                //   App.displayVideo.value = false;
+                // }
+
+                var response = await Navigator.push(context, DialogRoute(context: context, builder: (context) => AskDelete(itemToDelete: videoTitle,isSong: true,)));
+
+                if(response){
+                  App.deleteVideo(videoPath);
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class AddSongToPlaylist extends StatefulWidget {
   final SongModel song;
 
@@ -921,29 +1002,48 @@ class _AddSongToPlaylistState extends State<AddSongToPlaylist>{
   }
 }
 
-class VideoCard extends StatefulWidget {
+class VideoCard extends StatelessWidget {
   final VideoItem video;
   final String searchText;
-  final Uint8List? processedThumbnail;
-  VideoCard({super.key, required this.video,required this.searchText,this.processedThumbnail});
+  VideoCard({super.key, required this.video,required this.searchText});
 
   ValueNotifier<Uint8List?> thumbnail = ValueNotifier(null);
-
-  @override
-  State<VideoCard> createState() => _VideoCardState();
-
-}
-
-class _VideoCardState extends State<VideoCard> with AutomaticKeepAliveClientMixin{
   late Map<String, HighlightedWord> words;
 
-  @override
-  void initState(){
-    // TODO: implement initState
-    super.initState();
+//   @override
+//   State<VideoCard> createState() => _VideoCardState();
+//
+// }
+//
+// class _VideoCardState extends State<VideoCard> with AutomaticKeepAliveClientMixin{
+//   late Map<String, HighlightedWord> words;
+//
+//   @override
+//   void initState(){
+//     // TODO: implement initState
+//     super.initState();
+//
+//     print("${widget.searchText} 2");
+//
+//     words = {
+//       widget.searchText : HighlightedWord(
+//         textStyle: const TextStyle(
+//             fontFamily: "Orelega",
+//             fontSize: 18,
+//             color: Color(0xffE1246B),
+//             overflow: TextOverflow.ellipsis
+//         ),
+//       )
+//     };
+//   }
+//
+//   @override
+//   bool get wantKeepAlive => true;
 
+  @override
+  Widget build(BuildContext context){
     words = {
-      widget.searchText : HighlightedWord(
+      searchText : HighlightedWord(
         textStyle: const TextStyle(
             fontFamily: "Orelega",
             fontSize: 18,
@@ -952,14 +1052,7 @@ class _VideoCardState extends State<VideoCard> with AutomaticKeepAliveClientMixi
         ),
       )
     };
-  }
 
-  @override
-  bool get wantKeepAlive => true;
-
-  @override
-  Widget build(BuildContext context){
-    super.build(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.only(right: 3,left: 3),
@@ -970,7 +1063,7 @@ class _VideoCardState extends State<VideoCard> with AutomaticKeepAliveClientMixi
             App.playOrpause();
           }
 
-          App.playLocalVideo(widget.video.path,widget.video.name,fullScreen: widget.searchText.isEmpty ? false : true);
+          App.playLocalVideo(video.path,video.name,fullScreen: searchText.isEmpty ? false : true);
         },
         child: Card(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
@@ -990,29 +1083,21 @@ class _VideoCardState extends State<VideoCard> with AutomaticKeepAliveClientMixi
                           clipBehavior: Clip.antiAlias,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           child: ValueListenableBuilder(
-                            valueListenable: widget.thumbnail,
+                            valueListenable: thumbnail,
                             builder: (context,value,child){
-                              if(widget.processedThumbnail != null){
-                                return Image(
-                                  image: MemoryImage(widget.processedThumbnail!),
-                                  fit: BoxFit.cover,
+                              if(value == null){
+                                return Container(
+                                  padding: const EdgeInsets.all(10),
+                                  child: const Image(
+                                    image: AssetImage("icons/wave.png"),
+                                    fit: BoxFit.contain,
+                                  ),
                                 );
                               }else{
-                                if(value == null){
-                                  return Container(
-                                    padding: const EdgeInsets.all(10),
-                                    child: const Image(
-                                      image: AssetImage("icons/wave.png"),
-                                      fit: BoxFit.contain,
-                                    ),
-                                  );
-                                }else{
-                                  return Image(
-                                    image: MemoryImage(value),
-                                    fit: BoxFit.cover,
-                                  );
-
-                                }
+                                return Image(
+                                  image: MemoryImage(value),
+                                  fit: BoxFit.cover,
+                                );
                               }
                             }
                           )
@@ -1020,73 +1105,85 @@ class _VideoCardState extends State<VideoCard> with AutomaticKeepAliveClientMixi
                       ),
                       Expanded(
                         flex: 7,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.only(left: 5,right: 5,bottom: 10),
-                              child: TextHighlight(
-                                text: widget.video.name,
-                                words: words,
-                                overflow: TextOverflow.ellipsis,
-                                textStyle: const TextStyle(
-                                  fontFamily: "Orelega",
-                                  fontSize: 18,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            Row(
+                        child: ValueListenableBuilder(
+                          valueListenable: App.currentVideo,
+                          builder: (context,value,child){
+                            return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
+                                Container(
+                                  padding: const EdgeInsets.only(left: 5,right: 5,bottom: 10),
+                                  child: TextHighlight(
+                                    text: video.name,
+                                    words: words,
+                                    overflow: TextOverflow.ellipsis,
+                                    textStyle: TextStyle(
+                                      fontFamily: "Orelega",
+                                      fontSize: 18,
+                                      color: value.toString() == video.name ? const Color(0xffE1246B) : Colors.white,
+                                    ),
+                                  ),
+                                ),
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Container(
-                                      padding: const EdgeInsets.only(right: 5,left: 5),
-                                      child: Text(
-                                        // "Dur : ${int.parse(widget.video.duration).convertFromTo(TIME.milliseconds,TIME.minutes)!.toStringAsFixed(2)}",
-                                        "Dur : ${Duration(milliseconds: int.parse(widget.video.duration)).toString().split('.')[0]}",
-                                        style: const TextStyle(
-                                          overflow: TextOverflow.ellipsis,
-                                          fontFamily: "Orelega",
-                                          fontSize: 15,
-                                          color: Colors.white54,
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.only(right: 5,left: 5),
+                                          child: Text(
+                                            // "Dur : ${int.parse(widget.video.duration).convertFromTo(TIME.milliseconds,TIME.minutes)!.toStringAsFixed(2)}",
+                                            "Dur : ${Duration(milliseconds: int.parse(video.duration)).toString().split('.')[0]}",
+                                            style: const TextStyle(
+                                              overflow: TextOverflow.ellipsis,
+                                              fontFamily: "Orelega",
+                                              fontSize: 15,
+                                              color: Colors.white54,
+                                            ),
+                                          ),
                                         ),
-                                      ),
+                                        Container(
+                                          padding: const EdgeInsets.only(right: 5,left: 5),
+                                          child: Text(
+                                            "Size : ${int.parse(video.size).convertFromTo(DIGITAL_DATA.byte, DIGITAL_DATA.megabyte)!.toStringAsFixed(2)} MB",
+                                            style: const TextStyle(
+                                              overflow: TextOverflow.ellipsis,
+                                              fontFamily: "Orelega",
+                                              fontSize: 15,
+                                              color: Colors.white54,
+                                            ),
+                                          ),
+                                        )
+                                      ],
                                     ),
-                                    Container(
-                                      padding: const EdgeInsets.only(right: 5,left: 5),
-                                      child: Text(
-                                        "Size : ${int.parse(widget.video.size).convertFromTo(DIGITAL_DATA.byte, DIGITAL_DATA.megabyte)!.toStringAsFixed(2)} MB",
-                                        style: const TextStyle(
-                                          overflow: TextOverflow.ellipsis,
-                                          fontFamily: "Orelega",
-                                          fontSize: 15,
-                                          color: Colors.white54,
-                                        ),
+
+                                    Expanded(
+                                      child: Visibility(
+                                        visible: searchText.isEmpty == true && value.toString() != video.name ? true : false,
+                                        child: GestureDetector(
+                                          onTap: (){
+                                            Navigator.push(context,DialogRoute(context: context, builder: (context) => VideoOptions(videoTitle: video.name, videoPath: video.path)));
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.all(0),
+                                            alignment: Alignment.centerRight,
+                                            child: const Image(
+                                              image: AssetImage("icons/menu.png"),
+                                              width: 20,
+                                              height: 20,
+                                            ),
+                                          )
+                                        )
                                       ),
                                     )
                                   ],
                                 ),
-                                Visibility(
-                                  visible: widget.searchText.isEmpty,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(0),
-                                    child: GestureDetector(
-                                      child: const Image(
-                                        image: AssetImage("icons/menu.png"),
-                                        width: 20,
-                                        height: 20,
-                                      ),
-                                    ),
-                                  ),
-                                )
                               ],
-                            ),
-                          ],
-                        ),
+                            );
+                          }
+                        )
                       ),
                     ],
                   ),
@@ -1097,6 +1194,5 @@ class _VideoCardState extends State<VideoCard> with AutomaticKeepAliveClientMixi
         ),
       ),
     );
-
   }
 }

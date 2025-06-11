@@ -68,6 +68,9 @@ abstract class App{
   static VideoPlayerController? videoController;
   static ValueNotifier<ChewieController?> videoUI = ValueNotifier(null);
   static ValueNotifier<bool> displayVideo = ValueNotifier(false);
+  static ValueNotifier<String> currentVideo = ValueNotifier("");
+
+  static ValueNotifier<List<Widget>> searchWidgets = ValueNotifier([]);
 
   static Future<void> initialize()async{
     await AppDatabase.initialize();
@@ -161,7 +164,7 @@ abstract class App{
       if(i is VideoCard){
         ++index;
 
-        var img = await VideoThumbnail.thumbnailData(video: i.video.path,quality: 3);
+        var img = await VideoThumbnail.thumbnailData(video: i.video.path,quality: 1);
 
         (args[1] as SendPort).send([index,img]);
 
@@ -448,6 +451,32 @@ abstract class App{
     favouriteDisplay.value.add(SizedBox(height: minDisplayHeight));
   }
 
+  static void deleteVideo(String videoPath)async{
+    var path = join(getExternalStorageDirectory().toString(),videoPath);
+    await File(path).delete();
+
+    List<Widget> vid = [];
+
+    for(final i in videoDisplay.value){
+
+      try{
+        VideoCard video = i as VideoCard;
+
+        if(videoPath == video.video.path){
+          continue;
+        }
+
+        final remVideo = VideoCard(video: video.video, searchText: '');
+        remVideo.thumbnail.value = video.thumbnail.value;
+        vid.add(remVideo);
+      }catch(e){
+
+      }
+    }
+
+    videoDisplay.value = vid;
+  }
+
   static Future<void> shareMedia(String mediaTitle,String mediaPath)async{
     await AppinioSocialShare().android.shareFilesToSystem(mediaTitle, [mediaPath]);
   }
@@ -503,6 +532,8 @@ abstract class App{
 
     }
 
+    App.currentVideo.value = title;
+
     videoController = VideoPlayerController.file(File(path));
     await videoController?.initialize();
 
@@ -531,11 +562,20 @@ abstract class App{
             title: 'Close video'
           ),
           OptionItem(
-              onTap: ()async{
+            onTap: ()async{
+              Navigator.pop(context);
+              videoUI.value?.pause();
+              displayVideo.value = false;
 
-              },
-              iconData: Icons.delete,
-              title: 'Delete video'
+              var response = await Navigator.push(context, DialogRoute(context: context, builder: (context) => AskDelete(itemToDelete: title,isSong: true,)));
+
+              if(response) {
+                App.deleteVideo(path);
+              }
+
+            },
+            iconData: Icons.delete,
+            title: 'Delete video'
           )
         ];
       },
@@ -553,5 +593,46 @@ abstract class App{
 
   static void hideVideo(){
     displayVideo.value = false;
+  }
+
+  static void searchMedia(String searchText,String searchType){
+    if(searchText.isEmpty){
+      App.searchWidgets.value = [];
+    }else{
+      if(searchType == "song") {
+        List<SongModel> songList = App.allSongs
+            .where((song) =>
+            song.title.toLowerCase().contains(searchText.toLowerCase()))
+            .toList();
+
+        List<Widget> tile = [];
+        for (final i in songList) {
+          tile.add(SongTile(song: i, list: 'none', searchText: searchText,));
+        }
+
+        App.searchWidgets.value = tile;
+
+      }else if(searchType == 'video'){
+        List<Widget> vidList = [];
+
+        for(final i in App.videoDisplay.value){
+          try{
+            final vid = i as VideoCard;
+
+            if(vid.video.name.toLowerCase().contains(searchText.toLowerCase())){
+
+              final VideoCard resultVideo = VideoCard(video: vid.video, searchText: searchText);
+              resultVideo.thumbnail.value = vid.thumbnail.value;
+              vidList.add(resultVideo);
+            }
+          }catch(e){
+
+          }
+        }
+
+        App.searchWidgets.value = vidList;
+      }
+    }
+
   }
 }

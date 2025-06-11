@@ -39,10 +39,6 @@ class _PlaylistSongsState extends State<PlaylistSongs> with RouteAware{
         }
       }
 
-
-      // setState(() {
-      //
-      // });
     }
 
     if(App.musicIsPlaying.value && App.currentPlaylistName.value == widget.playlist.name){
