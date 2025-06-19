@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:media_player/BackEnd/App.dart';
-import 'package:on_audio_query/on_audio_query.dart';
-import 'Components.dart';
 
 class SearchMedia extends StatefulWidget{
   final String mediaType;

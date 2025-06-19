@@ -11,6 +11,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:media_player/BackEnd/Database.dart';
 import 'package:media_player/BackEnd/Playlist.dart';
 import 'package:media_player/FrontEnd/Components.dart';
@@ -70,10 +71,31 @@ abstract class App{
   static ValueNotifier<bool> displayVideo = ValueNotifier(false);
   static ValueNotifier<String> currentVideo = ValueNotifier("");
 
+  static late Directory thumbnailDir;
+  static ValueNotifier<List<String>> thumbnailsPath = ValueNotifier([]);
+
   static ValueNotifier<List<Widget>> searchWidgets = ValueNotifier([]);
 
   static Future<void> initialize()async{
     await AppDatabase.initialize();
+    final tempDir = await getTemporaryDirectory();
+    thumbnailDir = Directory(join(tempDir.path,"thumbnails"));
+
+    if(await thumbnailDir.exists()){
+      List<String> paths = [];
+      final files = await thumbnailDir.list().toList();
+
+      for(final i in files){
+        if(i.path.endsWith(".jpg")){
+          // print(i.path);
+          paths.add(i.path);
+        }
+      }
+
+      thumbnailsPath.value = paths;
+    }else{
+      thumbnailDir.create();
+    }
 
     await initializeAudioSession();
     await _audioQuery.checkAndRequest(retryRequest: true);
@@ -135,41 +157,49 @@ abstract class App{
 
     videoDisplay.value.add(SizedBox(height: (minDisplayHeight + 5),));
 
-    final port = ReceivePort();
-    var rootToken = RootIsolateToken.instance!;
+    if(thumbnailsPath.value.length != allVideos.length){
+      final port = ReceivePort();
+      var rootToken = RootIsolateToken.instance!;
 
-    isLoading.value = true;
+      isLoading.value = true;
 
-    await Isolate.spawn(generateThumbnails,[videoDisplay.value,port.sendPort,rootToken]);
+      await Isolate.spawn(generateThumbnails,[videoDisplay.value,port.sendPort,rootToken,thumbnailsPath.value,thumbnailDir]);
 
-    port.listen((message){
-      var index = message[0] as int;
-      var card = videoDisplay.value[index] as VideoCard;
+      port.listen((message){
+        var thumbnailList = message as List<String>;
+        var existingList = thumbnailsPath.value;
 
-      card.thumbnail.value = message[1];
-
-      if(index == videoDisplay.value.length - 2){
+        existingList.addAll(thumbnailList);
+        thumbnailsPath.value = existingList;
         isLoading.value = false;
-      }
-
-    });
-
+      });
+    }
   }
 
   static Future<void> generateThumbnails(List<Object> args)async{
     BackgroundIsolateBinaryMessenger.ensureInitialized(args[2] as RootIsolateToken);
+    List<String> existingPaths = args[3] as List<String>;
+    Directory thumbnailDir = args[4] as Directory;
+    List<String> processedImages = [];
 
-    int index = -1;
     for(final i in (args[0] as List<Widget>)){
       if(i is VideoCard){
-        ++index;
+        String filename = join(thumbnailDir.path,"${i.video.name.split(".")[0]}.jpg");
 
-        var img = await VideoThumbnail.thumbnailData(video: i.video.path,quality: 1);
+        if(!(existingPaths.contains(filename))){
+          var img = await VideoThumbnail.thumbnailData(video: i.video.path,quality: 1);
+          var compressedImg = await FlutterImageCompress.compressWithList(img!,quality: 50,);
 
-        (args[1] as SendPort).send([index,img]);
+          var file = File(filename);
+          await file.writeAsBytes(compressedImg);
 
+          processedImages.add(filename);
+
+        }
       }
     }
+
+    (args[1] as SendPort).send(processedImages);
   }
 
   static void playSong(SongModel song){
@@ -264,7 +294,6 @@ abstract class App{
 
       playSong(currentSongList[index]);
     }
-
   }
 
   static void seekSong(Duration dur){
@@ -451,8 +480,8 @@ abstract class App{
     favouriteDisplay.value.add(SizedBox(height: minDisplayHeight));
   }
 
-  static void deleteVideo(String videoPath)async{
-    var path = join(getExternalStorageDirectory().toString(),videoPath);
+  static void deleteVideo(VideoItem vida)async{
+    var path = join(getExternalStorageDirectory().toString(),vida.path);
     await File(path).delete();
 
     List<Widget> vid = [];
@@ -462,12 +491,11 @@ abstract class App{
       try{
         VideoCard video = i as VideoCard;
 
-        if(videoPath == video.video.path){
+        if(vida.path == video.video.path){
           continue;
         }
 
         final remVideo = VideoCard(video: video.video, searchText: '');
-        remVideo.thumbnail.value = video.thumbnail.value;
         vid.add(remVideo);
       }catch(e){
 
@@ -524,7 +552,7 @@ abstract class App{
 
   /*#############################################################################*/
 
-  static void playLocalVideo(String path,String title,{bool fullScreen = false})async{
+  static void playLocalVideo(VideoItem video,String title,{bool fullScreen = false})async{
     try{
       App.videoController?.dispose();
       App.videoUI.value?.dispose();
@@ -534,7 +562,7 @@ abstract class App{
 
     App.currentVideo.value = title;
 
-    videoController = VideoPlayerController.file(File(path));
+    videoController = VideoPlayerController.file(File(video.path));
     await videoController?.initialize();
 
     displayVideo.value = true;
@@ -547,7 +575,7 @@ abstract class App{
         return <OptionItem>[
           OptionItem(
             onTap: (){
-              shareMedia(title, path);
+              shareMedia(title, video.path);
             },
             iconData: Icons.share,
             title: 'Share video'
@@ -570,7 +598,7 @@ abstract class App{
               var response = await Navigator.push(context, DialogRoute(context: context, builder: (context) => AskDelete(itemToDelete: title,isSong: true,)));
 
               if(response) {
-                App.deleteVideo(path);
+                App.deleteVideo(video);
               }
 
             },
@@ -622,7 +650,6 @@ abstract class App{
             if(vid.video.name.toLowerCase().contains(searchText.toLowerCase())){
 
               final VideoCard resultVideo = VideoCard(video: vid.video, searchText: searchText);
-              resultVideo.thumbnail.value = vid.thumbnail.value;
               vidList.add(resultVideo);
             }
           }catch(e){

@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:highlight_text/highlight_text.dart';
 import 'package:media_player/BackEnd/Database.dart';
@@ -7,6 +7,7 @@ import 'package:media_player/FrontEnd/NowPlaying.dart';
 import 'package:media_player/FrontEnd/PlaylistSongs.dart';
 import 'package:mini_music_visualizer/mini_music_visualizer.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:path/path.dart';
 import 'package:units_converter/units_converter.dart';
 import 'package:video_storage_query/video_storage_query.dart';
 import '../BackEnd/App.dart';
@@ -800,9 +801,8 @@ class SongOptions extends StatelessWidget{
 }
 
 class VideoOptions extends StatelessWidget{
-  final String videoTitle;
-  final String videoPath;
-  const VideoOptions({super.key,required this.videoTitle,required this.videoPath});
+  final VideoItem video;
+  const VideoOptions({super.key,required this.video});
 
   Widget build(BuildContext context){
     return Container(
@@ -817,7 +817,7 @@ class VideoOptions extends StatelessWidget{
               padding: const EdgeInsets.all(10),
               width: MediaQuery.of(context).size.width*(2/3),
               child: Text(
-                videoTitle,
+                video.name,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontFamily: "Orelega",
@@ -841,7 +841,7 @@ class VideoOptions extends StatelessWidget{
                 ),
               ),
               onTap: ()async{
-                await App.shareMedia(videoTitle,videoPath).then((onValue){
+                await App.shareMedia(video.name,video.path).then((onValue){
                   Navigator.pop(context);
                 });
               },
@@ -866,10 +866,10 @@ class VideoOptions extends StatelessWidget{
                 //   App.displayVideo.value = false;
                 // }
 
-                var response = await Navigator.push(context, DialogRoute(context: context, builder: (context) => AskDelete(itemToDelete: videoTitle,isSong: true,)));
+                var response = await Navigator.push(context, DialogRoute(context: context, builder: (context) => AskDelete(itemToDelete: video.name,isSong: true,)));
 
                 if(response){
-                  App.deleteVideo(videoPath);
+                  App.deleteVideo(video);
                 }
               },
             ),
@@ -1007,38 +1007,8 @@ class VideoCard extends StatelessWidget {
   final String searchText;
   VideoCard({super.key, required this.video,required this.searchText});
 
-  ValueNotifier<Uint8List?> thumbnail = ValueNotifier(null);
+  // ValueNotifier<Uint8List?> thumbnail = ValueNotifier(null);
   late Map<String, HighlightedWord> words;
-
-//   @override
-//   State<VideoCard> createState() => _VideoCardState();
-//
-// }
-//
-// class _VideoCardState extends State<VideoCard> with AutomaticKeepAliveClientMixin{
-//   late Map<String, HighlightedWord> words;
-//
-//   @override
-//   void initState(){
-//     // TODO: implement initState
-//     super.initState();
-//
-//     print("${widget.searchText} 2");
-//
-//     words = {
-//       widget.searchText : HighlightedWord(
-//         textStyle: const TextStyle(
-//             fontFamily: "Orelega",
-//             fontSize: 18,
-//             color: Color(0xffE1246B),
-//             overflow: TextOverflow.ellipsis
-//         ),
-//       )
-//     };
-//   }
-//
-//   @override
-//   bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context){
@@ -1063,7 +1033,7 @@ class VideoCard extends StatelessWidget {
             App.playOrpause();
           }
 
-          App.playLocalVideo(video.path,video.name,fullScreen: searchText.isEmpty ? false : true);
+          App.playLocalVideo(video,video.name,fullScreen: searchText.isEmpty ? false : true);
         },
         child: Card(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
@@ -1083,20 +1053,23 @@ class VideoCard extends StatelessWidget {
                           clipBehavior: Clip.antiAlias,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           child: ValueListenableBuilder(
-                            valueListenable: thumbnail,
+                            valueListenable: App.thumbnailsPath,
                             builder: (context,value,child){
-                              if(value == null){
+                              String path = join(App.thumbnailDir.path,"${video.name.split(".")[0]}.jpg");
+                              print(path);
+
+                              if(value.contains(path)){
+                                return Image(
+                                  image: FileImage(File(path)),
+                                  fit: BoxFit.cover,
+                                );
+                              }else{
                                 return Container(
                                   padding: const EdgeInsets.all(10),
                                   child: const Image(
                                     image: AssetImage("icons/wave.png"),
                                     fit: BoxFit.contain,
                                   ),
-                                );
-                              }else{
-                                return Image(
-                                  image: MemoryImage(value),
-                                  fit: BoxFit.cover,
                                 );
                               }
                             }
@@ -1164,7 +1137,7 @@ class VideoCard extends StatelessWidget {
                                         visible: searchText.isEmpty == true && value.toString() != video.name ? true : false,
                                         child: GestureDetector(
                                           onTap: (){
-                                            Navigator.push(context,DialogRoute(context: context, builder: (context) => VideoOptions(videoTitle: video.name, videoPath: video.path)));
+                                            Navigator.push(context,DialogRoute(context: context, builder: (context) => VideoOptions(video: video,)));
                                           },
                                           child: Container(
                                             padding: const EdgeInsets.all(0),
