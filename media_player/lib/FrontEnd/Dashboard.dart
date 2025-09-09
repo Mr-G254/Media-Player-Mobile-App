@@ -29,7 +29,6 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin,Aut
         currentIndex = controller.index;
       });
     });
-
   }
 
   @override

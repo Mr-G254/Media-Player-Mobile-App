@@ -22,6 +22,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:video_storage_query/video_storage_query.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
+import 'package:youtube_data_api/models/video.dart';
+import 'package:youtube_data_api/youtube_data_api.dart';
 
 import '../chewie-1.8.7/lib/chewie.dart';
 
@@ -76,6 +78,10 @@ abstract class App{
 
   static ValueNotifier<List<Widget>> searchWidgets = ValueNotifier([]);
 
+  static YoutubeDataApi ytSearch = YoutubeDataApi();
+  static ValueNotifier<String> searchTerm = ValueNotifier("");
+  static ValueNotifier<List<Widget>> ytVideoWidgets = ValueNotifier([]);
+
   static Future<void> initialize()async{
     await AppDatabase.initialize();
     final tempDir = await getTemporaryDirectory();
@@ -87,7 +93,6 @@ abstract class App{
 
       for(final i in files){
         if(i.path.endsWith(".jpg")){
-          // print(i.path);
           paths.add(i.path);
         }
       }
@@ -170,6 +175,11 @@ abstract class App{
         var existingList = thumbnailsPath.value;
 
         existingList.addAll(thumbnailList);
+
+        for(final i in existingList){
+          print(i);
+        }
+
         thumbnailsPath.value = existingList;
         isLoading.value = false;
       });
@@ -660,6 +670,30 @@ abstract class App{
         App.searchWidgets.value = vidList;
       }
     }
+  }
+
+  /*################################################################################*/
+
+  static Future<List<String>> get_Search_Suggestions (String text)async{
+    List<String> suggestions = await ytSearch.fetchSuggestions(text);
+
+    return suggestions;
+  }
+
+  static void youtubeSearch(String searchText){
+
+  }
+
+  static void youtubeGetTrending()async{
+    List<Video> videos = await ytSearch.fetchTrendingVideo();
+    List<YoutubeVideo> videoWidgets = [];
+
+    for(final i in videos){
+      videoWidgets.add(YoutubeVideo(title: i.title!, duration: i.duration!, thumbnail: i.thumbnails!));
+    }
+
+    ytVideoWidgets.value = videoWidgets;
+
 
   }
 }

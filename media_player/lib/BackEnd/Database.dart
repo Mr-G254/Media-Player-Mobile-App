@@ -8,7 +8,7 @@ abstract class AppDatabase{
   static List<String> recentSongs = [];
   static List<String> favouriteSongs = [];
   static List<Playlist> playlists = [];
-
+  
   static Future<void> initialize()async{
     String path = p.join(await getDatabasesPath(),"App.db");
 
@@ -18,7 +18,6 @@ abstract class AppDatabase{
       onCreate: (db,ver){
         firstTimeSetup(db);
       }
-      // onCreate:
     );
 
     await getRecentSongs();

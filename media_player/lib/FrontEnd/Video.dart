@@ -152,4 +152,17 @@ class _VideoState extends State<Video> with AutomaticKeepAliveClientMixin{
     );
   }
 
+
+
+}
+
+class Details extends StatelessWidget{
+  const Details({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+    );
+  }
 }

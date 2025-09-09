@@ -57,6 +57,8 @@ dependencies:
   provider: ^6.1.2
   wakelock_plus: ^1.2.8
   video_thumbnail: ^0.5.6
+  material_floating_search_bar_2: ^0.5.0
+  youtube_data_api: ^1.0.4
 
 #  chewie: ^1.8.7
 

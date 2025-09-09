@@ -102,5 +102,4 @@ class _SearchMediaState extends State<SearchMedia>{
       body: window
     );
   }
-
 }

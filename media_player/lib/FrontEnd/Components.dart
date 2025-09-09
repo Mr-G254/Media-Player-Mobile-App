@@ -10,6 +10,7 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:path/path.dart';
 import 'package:units_converter/units_converter.dart';
 import 'package:video_storage_query/video_storage_query.dart';
+import 'package:youtube_data_api/models/thumbnail.dart';
 import '../BackEnd/App.dart';
 
 class SongTile extends StatelessWidget {
@@ -185,72 +186,72 @@ class _PlaylistTileState extends State<PlaylistTile>{
   @override
   Widget build(BuildContext context){
     return AnimatedBuilder(
-        animation: Listenable.merge([App.currentPlaylistName,App.musicIsPlaying]),
-        builder: (context,_){
-          return GestureDetector(
-            child: Container(
-              padding: const EdgeInsets.all(2),
-              child: Card(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                color: const Color(0xff510723),
-                child: Stack(
-                  children: [
-                    Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.all(30),
-                      child:
-                      App.currentPlaylistName.value == widget.playlist.name?
-                      MiniMusicVisualizer(
-                        radius: 6,
-                        color: const Color(0xffE1246B),
-                        width: MediaQuery.of(context).size.width/20,
-                        height: MediaQuery.of(context).size.height/10,
-                        animate: App.musicIsPlaying.value,
-                      ) :
-                      const Image(
-                        image: AssetImage("icons/playlist.png"),
+      animation: Listenable.merge([App.currentPlaylistName,App.musicIsPlaying]),
+      builder: (context,_){
+        return GestureDetector(
+          child: Container(
+            padding: const EdgeInsets.all(2),
+            child: Card(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              color: const Color(0xff510723),
+              child: Stack(
+                children: [
+                  Container(
+                    alignment: Alignment.center,
+                    padding: EdgeInsets.all(30),
+                    child:
+                    App.currentPlaylistName.value == widget.playlist.name?
+                    MiniMusicVisualizer(
+                      radius: 6,
+                      color: const Color(0xffE1246B),
+                      width: MediaQuery.of(context).size.width/20,
+                      height: MediaQuery.of(context).size.height/10,
+                      animate: App.musicIsPlaying.value,
+                    ) :
+                    const Image(
+                      image: AssetImage("icons/playlist.png"),
+                    ),
+                  ),
+                  Container(
+                    alignment: Alignment.topRight,
+                    padding: const EdgeInsets.only(top: 5,right: 7),
+                    child: Text(
+                      '${currentPlaylist.songs.length} songs',
+                      style: const TextStyle(
+                        fontFamily: "Orelega",
+                        fontSize: 15,
+                        color: Colors.white54,
                       ),
                     ),
-                    Container(
-                      alignment: Alignment.topRight,
-                      padding: const EdgeInsets.only(top: 5,right: 7),
-                      child: Text(
-                        '${currentPlaylist.songs.length} songs',
-                        style: const TextStyle(
-                          fontFamily: "Orelega",
-                          fontSize: 15,
-                          color: Colors.white54,
-                        ),
+                  ),
+                  Container(
+                    alignment: Alignment.bottomLeft,
+                    padding: const EdgeInsets.only(bottom: 5,left: 8),
+                    child: Text(
+                      currentPlaylist.name.split('_')[0],
+                      style: const TextStyle(
+                        fontFamily: "Orelega",
+                        fontSize: 17,
+                        color: Colors.white,
                       ),
                     ),
-                    Container(
-                      alignment: Alignment.bottomLeft,
-                      padding: const EdgeInsets.only(bottom: 5,left: 8),
-                      child: Text(
-                        currentPlaylist.name.split('_')[0],
-                        style: const TextStyle(
-                          fontFamily: "Orelega",
-                          fontSize: 17,
-                          color: Colors.white,
-                        ),
-                      ),
-                    )
-                  ],
-                ),
+                  )
+                ],
               ),
             ),
-            onTap: ()async{
-              var play = await Navigator.push(context, MaterialPageRoute(builder: (context) => PlaylistSongs(playlist: currentPlaylist)));
+          ),
+          onTap: ()async{
+            var play = await Navigator.push(context, MaterialPageRoute(builder: (context) => PlaylistSongs(playlist: currentPlaylist)));
 
-              if(play != null){
-                setState(() {
-                  currentPlaylist = play;
-                });
-                App.refreshPlaylistDisplay();
-              }
-            },
-          );
-        }
+            if(play != null){
+              setState(() {
+                currentPlaylist = play;
+              });
+              App.refreshPlaylistDisplay();
+            }
+          },
+        );
+      }
     );
   }
 }
@@ -436,26 +437,26 @@ class AskDelete extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xff510723),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))
-                        ),
-                        onPressed: (){
-                          Navigator.pop(context,true);
-                        },
-                        child: const Text(
-                          'yes',
-                          style: TextStyle(
-                            fontFamily: "Orelega",
-                            fontSize: 18,
-                            color: Colors.white,
-                          ),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xff510723),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))
+                      ),
+                      onPressed: (){
+                        Navigator.pop(context,true);
+                      },
+                      child: const Text(
+                        'yes',
+                        style: TextStyle(
+                          fontFamily: "Orelega",
+                          fontSize: 18,
+                          color: Colors.white,
                         ),
                       ),
-                    )
+                    ),
+                  )
                 ),
                 Expanded(
                     child: Container(
@@ -529,19 +530,19 @@ class _SelectableTileState extends State<SelectableTile>{
               height: 50,
               width: 50,
               child: Checkbox(
-                  tristate: false,
-                  // checkColor: const Color(0xff510723),
-                  activeColor: Color(0xff510723),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                  side: const BorderSide(color: Colors.white,width: 2),
-                  value: _isSelected,
-                  onChanged: (val){
-                    setState(() {
-                      _isSelected = val!;
-                    });
+                tristate: false,
+                // checkColor: const Color(0xff510723),
+                activeColor: Color(0xff510723),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                side: const BorderSide(color: Colors.white,width: 2),
+                value: _isSelected,
+                onChanged: (val){
+                  setState(() {
+                    _isSelected = val!;
+                  });
 
-                    widget.callback(widget.song);
-                  }
+                  widget.callback(widget.song);
+                }
               ),
             ),
           )
@@ -924,6 +925,7 @@ class _AddSongToPlaylistState extends State<AddSongToPlaylist>{
                   return ListTile(
                     selected: currentIndex == index,
                     selectedTileColor: const Color(0xff510723),
+
                     tileColor: const Color(0xff781F15),
                     title: Text(
                       playlists[index].name.split('_')[0],
@@ -951,6 +953,7 @@ class _AddSongToPlaylistState extends State<AddSongToPlaylist>{
                     backgroundColor: const Color(0xff510723),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))
                 ),
+
                 onPressed: ()async{
                   String? name = await Navigator.push(context, DialogRoute(context: context, builder: (context) => const NewPlaylistDialog()));
 
@@ -962,7 +965,6 @@ class _AddSongToPlaylistState extends State<AddSongToPlaylist>{
 
                     });
                   }
-
                 },
                 child: const Text(
                   'New playlist',
@@ -979,8 +981,8 @@ class _AddSongToPlaylistState extends State<AddSongToPlaylist>{
               padding: const EdgeInsets.only(right: 10,left: 10,bottom: 5),
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xff510723),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))
+                  backgroundColor: const Color(0xff510723),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))
                 ),
                 onPressed: (){
                   Navigator.pop(context);
@@ -1007,7 +1009,6 @@ class VideoCard extends StatelessWidget {
   final String searchText;
   VideoCard({super.key, required this.video,required this.searchText});
 
-  // ValueNotifier<Uint8List?> thumbnail = ValueNotifier(null);
   late Map<String, HighlightedWord> words;
 
   @override
@@ -1015,10 +1016,10 @@ class VideoCard extends StatelessWidget {
     words = {
       searchText : HighlightedWord(
         textStyle: const TextStyle(
-            fontFamily: "Orelega",
-            fontSize: 18,
-            color: Color(0xffE1246B),
-            overflow: TextOverflow.ellipsis
+          fontFamily: "Orelega",
+          fontSize: 18,
+          color: Color(0xffE1246B),
+          overflow: TextOverflow.ellipsis
         ),
       )
     };
@@ -1056,7 +1057,7 @@ class VideoCard extends StatelessWidget {
                             valueListenable: App.thumbnailsPath,
                             builder: (context,value,child){
                               String path = join(App.thumbnailDir.path,"${video.name.split(".")[0]}.jpg");
-                              print(path);
+                              // print(path);
 
                               if(value.contains(path)){
                                 return Image(
@@ -1166,6 +1167,61 @@ class VideoCard extends StatelessWidget {
           )
         ),
       ),
+    );
+  }
+}
+
+class SearchSuggestions extends StatelessWidget{
+  final String suggestion;
+  final String searchText;
+  const SearchSuggestions({required this.suggestion, required this.searchText,super.key});
+
+  @override
+  Widget build(BuildContext context){
+    Map<String, HighlightedWord> words = {
+      searchText : HighlightedWord(
+        textStyle: const TextStyle(
+          fontFamily: "Orelega",
+          fontSize: 20,
+          color: Colors.white,
+          overflow: TextOverflow.ellipsis
+        ),
+      )
+    };
+
+    return GestureDetector(
+      child: Container(
+        padding: const EdgeInsets.only(left: 10,right: 10,top: 5,bottom: 5),
+        alignment: Alignment.centerLeft,
+        child: TextHighlight(
+          text: suggestion,
+          words: words,
+          overflow: TextOverflow.ellipsis,
+          textStyle: const TextStyle(
+            fontFamily: "Orelega",
+            fontSize: 20,
+            color: Colors.white54
+          ),
+        ),
+      ),
+      onTap: (){
+        App.youtubeSearch(suggestion);
+      },
+    );
+  }
+}
+
+class YoutubeVideo extends StatelessWidget{
+  final String title;
+  final String duration;
+  final List<Thumbnail> thumbnail;
+  const YoutubeVideo({super.key,required this.title,required this.duration,required this.thumbnail});
+
+  @override
+  Widget build(BuildContext context){
+    return Container(
+      padding: const EdgeInsets.all(5),
+
     );
   }
 }
