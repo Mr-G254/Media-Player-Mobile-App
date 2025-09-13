@@ -24,7 +24,6 @@ import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:youtube_data_api/models/video.dart';
 import 'package:youtube_data_api/youtube_data_api.dart';
-
 import '../chewie-1.8.7/lib/chewie.dart';
 
 abstract class App{
@@ -106,11 +105,6 @@ abstract class App{
     await _audioQuery.checkAndRequest(retryRequest: true);
     allSongs = await _audioQuery.querySongs();
 
-    if(Permission.videos.status != PermissionStatus.granted){
-      await Permission.videos.request();
-    }
-    allVideos = await videoQuery.queryVideos();
-
     allSongs = allSongs.where((song) => song.isMusic == true).toList();
 
     allSongs.forEach((val){
@@ -156,11 +150,23 @@ abstract class App{
     updateSongUI(currentSong.value);
     updateIsPlayingUI(false);
 
-    for(final i in allVideos){
-      videoDisplay.value.add(VideoCard(video: i, searchText: '',));
-    }
+    loadVideos();
+  }
 
-    videoDisplay.value.add(SizedBox(height: (minDisplayHeight + 5),));
+  static Future<void> loadVideos()async {
+    if(Permission.videos.status != PermissionStatus.granted){
+      await Permission.videos.request();
+    }
+    allVideos = await videoQuery.queryVideos();
+
+    videoDisplay.value = [];
+    List<Widget> cards = [];
+
+    for(final i in allVideos){
+      cards.add(VideoCard(video: i, searchText: '',));
+    }
+    cards.add(SizedBox(height: (minDisplayHeight + 5),));
+    videoDisplay.value = cards;
 
     if(thumbnailsPath.value.length != allVideos.length){
       final port = ReceivePort();
@@ -184,6 +190,7 @@ abstract class App{
         isLoading.value = false;
       });
     }
+
   }
 
   static Future<void> generateThumbnails(List<Object> args)async{

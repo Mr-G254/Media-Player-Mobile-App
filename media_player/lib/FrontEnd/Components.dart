@@ -1225,3 +1225,120 @@ class YoutubeVideo extends StatelessWidget{
     );
   }
 }
+
+class YtVideoCard extends StatelessWidget {
+  final String title;
+  final String duration;
+  final String views;
+  final List<Thumbnail> thumbnail;
+  const YtVideoCard({super.key, required this.title,required this.duration,required this.views,required this.thumbnail});
+
+  @override
+  Widget build(BuildContext context){
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.only(right: 3,left: 3),
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: (){
+
+        },
+        child: Card(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
+          color: const Color(0xff5C1C14),
+          child: Container(
+            padding: const EdgeInsets.all(5),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 8,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: Card(
+                          color: const Color(0xff510723),
+                          clipBehavior: Clip.antiAlias,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          // child: Image(image: MemoryImage(thumbnail[0]))
+                        ),
+                      ),
+                      Expanded(
+                        flex: 7,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.only(left: 5,right: 5,bottom: 10),
+                              child: Text(
+                                title,
+                                style: const TextStyle(
+                                  fontFamily: "Orelega",
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                ),
+                              )
+                            ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Container(
+                                    padding: const EdgeInsets.only(right: 5,left: 5),
+                                    child: Text(
+                                      "Dur : ${Duration(milliseconds: int.parse(duration)).toString().split('.')[0]}",
+                                      style: const TextStyle(
+                                        overflow: TextOverflow.ellipsis,
+                                        fontFamily: "Orelega",
+                                        fontSize: 15,
+                                        color: Colors.white54,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child:  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(5),
+                                        child: const Image(
+                                          image: AssetImage("icons/eye.png"),
+                                          width: 20,
+                                          height: 20,
+                                        ),
+                                      ),
+                                      SizedBox(width: 5,),
+                                      Container(
+                                        padding: const EdgeInsets.only(right: 5,left: 5),
+                                        child: Text(
+                                          int.parse(views).convertFromTo(DIGITAL_DATA.byte, DIGITAL_DATA.megabyte)!.toStringAsFixed(2),
+                                          style: const TextStyle(
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: "Orelega",
+                                            fontSize: 15,
+                                            color: Colors.white54,
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
+                          ],
+                        )
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          )
+        ),
+      ),
+    );
+  }
+}
