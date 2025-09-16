@@ -168,7 +168,9 @@ abstract class App{
     cards.add(SizedBox(height: (minDisplayHeight + 5),));
     videoDisplay.value = cards;
 
+    print("Yeah111");
     if(thumbnailsPath.value.length != allVideos.length){
+      print("Yeah");
       final port = ReceivePort();
       var rootToken = RootIsolateToken.instance!;
 
@@ -498,28 +500,30 @@ abstract class App{
   }
 
   static void deleteVideo(VideoItem vida)async{
-    var path = join(getExternalStorageDirectory().toString(),vida.path);
-    await File(path).delete();
+    final plugin = DeviceInfoPlugin();
+    final android = await plugin.androidInfo;
 
-    List<Widget> vid = [];
-
-    for(final i in videoDisplay.value){
-
-      try{
-        VideoCard video = i as VideoCard;
-
-        if(vida.path == video.video.path){
-          continue;
-        }
-
-        final remVideo = VideoCard(video: video.video, searchText: '');
-        vid.add(remVideo);
-      }catch(e){
-
+    if(android.version.sdkInt < 30){
+      var perm = await Permission.storage.status;
+      if(!perm.isGranted){
+        await Permission.storage.request();
+      }
+    }else{
+      var perm = await Permission.manageExternalStorage.status;
+      if(!perm.isGranted){
+        await Permission.manageExternalStorage.request();
       }
     }
 
-    videoDisplay.value = vid;
+    var path = join(getExternalStorageDirectory().toString(),vida.path);
+    await File(path).delete();
+
+    String thumbnail = join(thumbnailDir.path,"${vida.name.split(".")[0]}.jpg");
+    if(await File(thumbnail).exists()){
+      File(thumbnail).delete();
+    }
+
+    loadVideos();
   }
 
   static Future<void> shareMedia(String mediaTitle,String mediaPath)async{
